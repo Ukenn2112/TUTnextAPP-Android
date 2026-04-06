@@ -112,7 +112,7 @@ app/src/main/java/com/meikenn/tama/
 
 ## 6. 移植阶段规划
 
-详见 [MIGRATION_PLAN.md](MIGRATION_PLAN.md)。
+详见 [MIGRATION_PLAN.md](MIGRATION_PLAN.md)。所有 6 个 Phase 已完成实现。
 
 ## 7. 编码行动准则
 

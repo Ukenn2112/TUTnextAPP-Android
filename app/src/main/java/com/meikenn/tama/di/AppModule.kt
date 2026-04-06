@@ -1,9 +1,6 @@
 package com.meikenn.tama.di
 
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-
-@Module
-@InstallIn(SingletonComponent::class)
-object AppModule
+// This module has been split into:
+// - NetworkModule.kt (Retrofit, OkHttp, Gson, CookieJar)
+// - DatabaseModule.kt (Room, DAOs)
+// - AuthModule.kt (EncryptedSharedPreferences)

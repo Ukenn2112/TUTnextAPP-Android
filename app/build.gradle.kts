@@ -92,6 +92,21 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
 
+    // Security (EncryptedSharedPreferences)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Gson (standalone for JSON serialization)
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // Chrome Custom Tabs
+    implementation("androidx.browser:browser:1.7.0")
+
+    // Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Core
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
