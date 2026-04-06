@@ -3,6 +3,7 @@ package com.meikenn.tama.ui.feature.bus
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -10,14 +11,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -29,6 +33,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.domain.model.*
 
+// Colors matching iOS appPrimary and other constants
+private val AppPrimary = Color(0xFF6650A4)
+private val OrangeAccent = Color(0xFFFF9800)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BusScheduleScreen(
@@ -36,46 +44,33 @@ fun BusScheduleScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("バス時刻表") }
+    when {
+        uiState.isLoading && uiState.schedule == null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        uiState.error != null && uiState.schedule == null -> {
+            ErrorContent(
+                message = uiState.error!!,
+                onRetry = { viewModel.fetchBusSchedule() },
+                modifier = Modifier.fillMaxSize()
             )
         }
-    ) { innerPadding ->
-        when {
-            uiState.isLoading && uiState.schedule == null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            uiState.error != null && uiState.schedule == null -> {
-                ErrorContent(
-                    message = uiState.error!!,
-                    onRetry = { viewModel.fetchBusSchedule() },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                )
-            }
-            uiState.schedule != null -> {
-                BusScheduleContent(
-                    uiState = uiState,
-                    viewModel = viewModel,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                )
-            }
+        uiState.schedule != null -> {
+            BusScheduleContent(
+                uiState = uiState,
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BusScheduleContent(
     uiState: BusScheduleUiState,
@@ -85,6 +80,7 @@ private fun BusScheduleContent(
     val schedule = uiState.schedule ?: return
     val filteredSchedule = viewModel.getFilteredSchedule()
     val listState = rememberLazyListState()
+
     // Scroll to current hour on first load
     LaunchedEffect(filteredSchedule, uiState.currentHour) {
         val nextBus = viewModel.getNextBus()
@@ -93,24 +89,24 @@ private fun BusScheduleContent(
             ?.filter { it.times.isNotEmpty() } ?: return@LaunchedEffect
         val index = visibleSchedules.indexOfFirst { it.hour == targetHour }
         if (index >= 0) {
-            // Offset by header items: messages card (0 or 1) + schedule type selector (1) + route selector (1) + time card (1)
-            val headerOffset = (if (schedule.temporaryMessages.isNotEmpty()) 1 else 0) + 3
+            // Header items: messages (0 or 1) + schedule type (1) + route (1) + time card (1) + table header (1)
+            val headerOffset = (if (schedule.temporaryMessages.isNotEmpty()) 1 else 0) + 4
             listState.animateScrollToItem(index + headerOffset)
         }
     }
 
     LazyColumn(
         state = listState,
-        modifier = modifier
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
-        // Temporary messages
+        // 1. Temporary messages (horizontal scroll cards)
         if (schedule.temporaryMessages.isNotEmpty()) {
             item(key = "messages") {
                 TemporaryMessagesRow(messages = schedule.temporaryMessages)
             }
         }
 
-        // Schedule type selector
+        // 2. Schedule type selector (segmented)
         item(key = "scheduleType") {
             ScheduleTypeSelector(
                 selected = uiState.selectedScheduleType,
@@ -118,7 +114,7 @@ private fun BusScheduleContent(
             )
         }
 
-        // Route selector
+        // 3. Route selector (pill buttons)
         item(key = "routeSelector") {
             RouteSelector(
                 selected = uiState.selectedRoute,
@@ -126,23 +122,22 @@ private fun BusScheduleContent(
             )
         }
 
-        // Time card (current time + next bus)
+        // 4. Floating time card
         item(key = "timeCard") {
             TimeInfoCard(
                 uiState = uiState,
                 nextBus = viewModel.getNextBus(),
+                selectedEntry = uiState.selectedEntry,
                 pinMessage = schedule.pin
             )
         }
 
-        // Wednesday special message
-        if (uiState.selectedScheduleType == ScheduleType.WEDNESDAY) {
-            item(key = "wednesdayMessage") {
-                WednesdayInfoBanner()
-            }
+        // 5. Time table header
+        item(key = "tableHeader") {
+            TimeTableHeader()
         }
 
-        // Schedule table
+        // 6. Hour rows
         val visibleSchedules = filteredSchedule?.hourSchedules
             ?.filter { it.times.isNotEmpty() } ?: emptyList()
 
@@ -155,11 +150,15 @@ private fun BusScheduleContent(
                 hourSchedule = hourSchedule,
                 isCurrentHour = viewModel.isNextBusHour(hourSchedule.hour),
                 isNextBus = { viewModel.isNextBus(it) },
+                isSelected = { entry ->
+                    uiState.selectedEntry?.let { it.hour == entry.hour && it.minute == entry.minute } ?: false
+                },
+                onEntryClick = { viewModel.selectEntry(it) },
                 rowIndex = rowIndex
             )
         }
 
-        // Special notes
+        // 7. Special notes legend
         item(key = "specialNotes") {
             SpecialNotesSection(
                 specialNotes = schedule.specialNotes,
@@ -172,7 +171,7 @@ private fun BusScheduleContent(
     }
 }
 
-// region Temporary Messages
+// region 1. Temporary Messages
 
 @Composable
 private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
@@ -181,41 +180,62 @@ private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         messages.forEach { message ->
-            Card(
-                modifier = Modifier.width(260.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(
-                        Color(0xFFFF9800).copy(alpha = 0.4f)
+            Box(
+                modifier = Modifier
+                    .width(260.dp)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(10.dp),
+                        ambientColor = Color.Black.copy(alpha = 0.08f),
+                        spotColor = Color.Black.copy(alpha = 0.08f)
                     )
-                )
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(
+                        width = 1.dp,
+                        color = OrangeAccent.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .clickable(enabled = message.url != null) {
+                        message.url?.let { url ->
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            )
+                        }
+                    }
             ) {
                 Row(
-                    modifier = Modifier
-                        .clickable(enabled = message.url != null) {
-                            message.url?.let { url ->
-                                context.startActivity(
-                                    Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                )
-                            }
-                        }
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("⚠", fontSize = 14.sp)
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = OrangeAccent
+                    )
                     Text(
                         text = message.title,
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        maxLines = 2
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        maxLines = 2,
+                        modifier = Modifier.weight(1f)
                     )
+                    if (message.url != null) {
+                        Icon(
+                            imageVector = Icons.Filled.ChevronRight,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -224,7 +244,7 @@ private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
 
 // endregion
 
-// region Schedule Type Selector
+// region 2. Schedule Type Selector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -247,7 +267,7 @@ private fun ScheduleTypeSelector(
             ) {
                 Text(
                     text = type.displayName,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelSmall,
                     maxLines = 1
                 )
             }
@@ -257,7 +277,7 @@ private fun ScheduleTypeSelector(
 
 // endregion
 
-// region Route Selector
+// region 3. Route Selector
 
 @Composable
 private fun RouteSelector(
@@ -283,10 +303,12 @@ private fun RouteSelector(
             )
         }
 
-        VerticalDivider(
-            modifier = Modifier.height(20.dp),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
+        // Divider between route pairs
+        Box(
+            modifier = Modifier
+                .height(20.dp)
+                .width(1.dp)
+                .background(Color.Gray.copy(alpha = 0.3f))
         )
 
         schoolRoutes.forEach { route ->
@@ -308,7 +330,7 @@ private fun RouteChip(
     val containerColor = if (isSelected) {
         MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.surfaceContainerHighest
     }
     val contentColor = if (isSelected) {
         MaterialTheme.colorScheme.onPrimary
@@ -320,13 +342,15 @@ private fun RouteChip(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         color = containerColor,
-        tonalElevation = if (isSelected) 2.dp else 0.dp,
-        shadowElevation = if (isSelected) 2.dp else 0.dp
+        shadowElevation = if (isSelected) 3.dp else 0.dp
     ) {
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodySmall.copy(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            ),
             color = contentColor
         )
     }
@@ -334,22 +358,33 @@ private fun RouteChip(
 
 // endregion
 
-// region Time Info Card
+// region 4. Floating Time Card
 
 @Composable
 private fun TimeInfoCard(
     uiState: BusScheduleUiState,
     nextBus: TimeEntry?,
+    selectedEntry: TimeEntry?,
     pinMessage: PinMessage?
 ) {
     val context = LocalContext.current
 
-    Card(
+    // Determine effective target bus (selected or next)
+    val targetBus = selectedEntry ?: nextBus
+    val isSelectedMode = selectedEntry != null
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .shadow(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(12.dp),
+                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+            )
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -357,64 +392,80 @@ private fun TimeInfoCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
+                // Left: current time
                 Column {
                     Text(
                         text = "現在時刻",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = String.format("%02d:%02d", uiState.currentHour, uiState.currentMinute),
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
 
-                if (nextBus != null) {
+                // Right: countdown
+                if (targetBus != null) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "次のバスまで",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = if (isSelectedMode) "選択したバスまで" else "次のバスまで",
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        val diffMinutes = (nextBus.hour - uiState.currentHour) * 60 +
-                            (nextBus.minute - uiState.currentMinute)
-                        val hours = diffMinutes / 60
-                        val mins = diffMinutes % 60
-                        val countdownText = if (hours > 0) "${hours}時間${mins}分" else "${mins}分"
-                        Text(
-                            text = countdownText,
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        if (nextBus.specialNote != null) {
+                        val diffMinutes = (targetBus.hour - uiState.currentHour) * 60 +
+                            (targetBus.minute - uiState.currentMinute)
+                        val countdownColor = if (isSelectedMode) OrangeAccent else Color(0xFF4CAF50)
+                        if (diffMinutes >= 0) {
+                            val hours = diffMinutes / 60
+                            val mins = diffMinutes % 60
+                            val countdownText = if (hours > 0) "${hours}時間${mins}分" else "${mins}分"
                             Text(
-                                text = nextBus.specialNote,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier
-                                    .background(
-                                        MaterialTheme.colorScheme.errorContainer,
-                                        RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                                text = countdownText,
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = countdownColor
+                            )
+                        } else {
+                            Text(
+                                text = "到着済み",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 } else {
-                    Text(
-                        text = "本日の運行は終了しました",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "本日の運行は終了しました",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
             // Pin message
             if (pinMessage != null) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Surface(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(OrangeAccent.copy(alpha = 0.15f))
+                        .border(
+                            width = 1.dp,
+                            color = OrangeAccent.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(10.dp)
+                        )
                         .then(
                             if (pinMessage.url != null) {
                                 Modifier.clickable {
@@ -423,27 +474,31 @@ private fun TimeInfoCard(
                                     )
                                 }
                             } else Modifier
-                        ),
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color(0xFFFF9800).copy(alpha = 0.15f)
+                        )
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("📌", fontSize = 13.sp)
+                        Text(
+                            text = "\uD83D\uDCCC",
+                            fontSize = 13.sp
+                        )
                         Text(
                             text = pinMessage.title,
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
                             modifier = Modifier.weight(1f),
                             maxLines = 2
                         )
                         if (pinMessage.url != null) {
                             Text(
-                                text = "詳細 ›",
+                                text = "詳細",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color(0xFFFF9800)
+                                color = OrangeAccent
                             )
                         }
                     }
@@ -455,49 +510,59 @@ private fun TimeInfoCard(
 
 // endregion
 
-// region Wednesday Info
+// region 5. Time Table Header
 
 @Composable
-private fun WednesdayInfoBanner() {
-    Surface(
+private fun TimeTableHeader() {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-        shape = RoundedCornerShape(8.dp)
+            .padding(horizontal = 16.dp)
+            .padding(top = 8.dp)
+            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("ℹ️", fontSize = 16.sp)
-            Text(
-                text = "水曜日は特別ダイヤで運行しています",
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
-            )
-        }
+        Text(
+            text = "時間",
+            modifier = Modifier.width(70.dp),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "発車時刻",
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 // endregion
 
-// region Hour Schedule Row
+// region 6. Hour Schedule Row
 
 @Composable
 private fun HourScheduleRow(
     hourSchedule: HourSchedule,
     isCurrentHour: Boolean,
     isNextBus: (TimeEntry) -> Boolean,
+    isSelected: (TimeEntry) -> Boolean,
+    onEntryClick: (TimeEntry) -> Unit,
     rowIndex: Int
 ) {
     val backgroundColor = when {
         isCurrentHour -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         rowIndex % 2 == 0 -> MaterialTheme.colorScheme.surface
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 
-    Column {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -505,61 +570,67 @@ private fun HourScheduleRow(
                 .padding(vertical = 12.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Hour column
+            // Hour column - 70dp width, centered
             Text(
                 text = "${hourSchedule.hour}",
                 modifier = Modifier.width(70.dp),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace
                 )
             )
 
-            VerticalDivider(
-                modifier = Modifier.height(IntrinsicSize.Min),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-
             // Minutes grid
-            FlowMinutesGrid(
+            MinutesGrid(
                 times = hourSchedule.times,
                 isNextBus = isNextBus,
+                isSelected = isSelected,
+                onEntryClick = onEntryClick,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 8.dp)
             )
         }
 
+        // Divider between hours
         HorizontalDivider(
-            thickness = 0.5.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
+            thickness = 1.dp,
+            color = Color.Gray.copy(alpha = 0.3f)
         )
     }
 }
 
 @Composable
-private fun FlowMinutesGrid(
+private fun MinutesGrid(
     times: List<TimeEntry>,
     isNextBus: (TimeEntry) -> Boolean,
+    isSelected: (TimeEntry) -> Boolean,
+    onEntryClick: (TimeEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Simple wrapping layout using rows of 5
+    // LazyVGrid-like: 5 columns, item width ~50dp, spacing 8h 12v
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         times.chunked(5).forEach { rowTimes ->
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 rowTimes.forEach { time ->
                     TimeEntryChip(
                         time = time,
-                        isHighlighted = isNextBus(time)
+                        isHighlighted = isNextBus(time),
+                        isSelected = isSelected(time),
+                        onClick = { onEntryClick(time) }
                     )
+                }
+                // Fill remaining slots for alignment
+                repeat(5 - rowTimes.size) {
+                    Spacer(modifier = Modifier.size(width = 50.dp, height = 36.dp))
                 }
             }
         }
@@ -569,21 +640,28 @@ private fun FlowMinutesGrid(
 @Composable
 private fun TimeEntryChip(
     time: TimeEntry,
-    isHighlighted: Boolean
+    isHighlighted: Boolean,
+    isSelected: Boolean,
+    onClick: () -> Unit
 ) {
-    Box(contentAlignment = Alignment.Center) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.clickable { onClick() }
+    ) {
         val backgroundColor = when {
+            isSelected -> OrangeAccent.copy(alpha = 0.9f)
             isHighlighted -> MaterialTheme.colorScheme.primary
             else -> Color.Transparent
         }
         val textColor = when {
+            isSelected -> Color.White
             isHighlighted -> MaterialTheme.colorScheme.onPrimary
             else -> MaterialTheme.colorScheme.onSurface
         }
 
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(width = 50.dp, height = 36.dp)
                 .clip(RoundedCornerShape(6.dp))
                 .background(backgroundColor),
             contentAlignment = Alignment.Center
@@ -591,6 +669,7 @@ private fun TimeEntryChip(
             Text(
                 text = String.format("%02d", time.minute),
                 style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     fontFamily = FontFamily.Monospace
                 ),
@@ -606,7 +685,7 @@ private fun TimeEntryChip(
                     .offset(x = 8.dp, y = (-4).dp)
                     .size(18.dp)
                     .background(
-                        MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                        Color.Red.copy(alpha = 0.8f),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -614,7 +693,7 @@ private fun TimeEntryChip(
                 Text(
                     text = time.specialNote,
                     style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 9.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     ),
                     color = Color.White
@@ -626,19 +705,25 @@ private fun TimeEntryChip(
 
 // endregion
 
-// region Special Notes
+// region 7. Special Notes Legend
 
 @Composable
 private fun SpecialNotesSection(
     specialNotes: List<SpecialNote>,
     showWednesdayWarning: Boolean
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .shadow(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(12.dp),
+                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+            )
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -658,7 +743,7 @@ private fun SpecialNotesSection(
                         modifier = Modifier
                             .size(20.dp)
                             .background(
-                                MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                                Color.Red.copy(alpha = 0.8f),
                                 CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -674,27 +759,37 @@ private fun SpecialNotesSection(
                     }
                     Text(
                         text = note.description,
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp)
                     )
                 }
             }
 
+            // Wednesday warning
             if (showWednesdayWarning) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(8.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Red.copy(alpha = 0.1f))
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("⚠", fontSize = 14.sp)
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.Red
+                        )
                         Text(
                             text = "水曜日は特別ダイヤで運行しています",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.error
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color.Red
                         )
                     }
                 }

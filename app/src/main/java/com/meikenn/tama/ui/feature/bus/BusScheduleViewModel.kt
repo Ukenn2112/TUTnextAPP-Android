@@ -20,6 +20,7 @@ data class BusScheduleUiState(
     val schedule: BusSchedule? = null,
     val selectedRoute: RouteType = RouteType.FROM_SEISEKI_TO_SCHOOL,
     val selectedScheduleType: ScheduleType = ScheduleType.WEEKDAY,
+    val selectedEntry: TimeEntry? = null,
     val isLoading: Boolean = true,
     val error: String? = null,
     val currentHour: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
@@ -73,11 +74,21 @@ class BusScheduleViewModel @Inject constructor(
     }
 
     fun selectRoute(route: RouteType) {
-        _uiState.update { it.copy(selectedRoute = route) }
+        _uiState.update { it.copy(selectedRoute = route, selectedEntry = null) }
     }
 
     fun selectScheduleType(type: ScheduleType) {
-        _uiState.update { it.copy(selectedScheduleType = type) }
+        _uiState.update { it.copy(selectedScheduleType = type, selectedEntry = null) }
+    }
+
+    fun selectEntry(entry: TimeEntry?) {
+        _uiState.update { state ->
+            if (state.selectedEntry == entry) {
+                state.copy(selectedEntry = null)
+            } else {
+                state.copy(selectedEntry = entry)
+            }
+        }
     }
 
     fun getFilteredSchedule(): DaySchedule? {

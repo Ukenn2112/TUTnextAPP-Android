@@ -2,9 +2,11 @@ package com.meikenn.tama.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -31,41 +33,35 @@ fun CourseCard(
     onClick: () -> Unit = {}
 ) {
     val backgroundColor = CourseColors.getColor(course.colorIndex)
-    val isLight = backgroundColor == Color.White
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(4.dp)
+            .padding(horizontal = 4.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = course.name,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = 12.sp
-                ),
-                color = if (isLight) MaterialTheme.colorScheme.onSurface
-                else Color(0xFF333333),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Center,
+                lineHeight = 14.sp
             )
 
             if (course.room.isNotBlank()) {
                 Text(
                     text = course.room,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 9.sp,
-                        lineHeight = 11.sp
-                    ),
-                    color = if (isLight) MaterialTheme.colorScheme.onSurfaceVariant
-                    else Color(0xFF555555),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -78,16 +74,17 @@ fun CourseCard(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(14.dp)
+                    .offset(x = 6.dp, y = (-6).dp)
+                    .size(15.dp)
                     .background(Color.Red, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (unread > 9) "9+" else unread.toString(),
+                    text = unread.toString(),
                     color = Color.White,
-                    fontSize = 7.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 8.sp
+                    lineHeight = 11.sp
                 )
             }
         }
