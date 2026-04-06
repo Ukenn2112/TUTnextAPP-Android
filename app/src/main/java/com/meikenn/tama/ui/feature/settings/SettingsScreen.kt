@@ -3,6 +3,8 @@ package com.meikenn.tama.ui.feature.settings
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +21,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,13 +36,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -59,6 +66,7 @@ fun SettingsScreen(
     val context = LocalContext.current
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             TopAppBar(
                 title = { Text("設定") },
@@ -66,7 +74,10 @@ fun SettingsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "戻る")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                )
             )
         }
     ) { innerPadding ->
@@ -88,99 +99,129 @@ fun SettingsScreen(
 
             // Account settings
             SectionHeader("アカウント設定")
-            SettingsItem(
-                title = "パスワード変更",
-                icon = Icons.Default.Lock,
-                iconTint = Color(0xFF2196F3),
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://google.tama.ac.jp/unicornidm/user/tama/password/"))
-                    context.startActivity(intent)
-                }
-            )
+            SettingsCard {
+                SettingsRow(
+                    title = "パスワード変更",
+                    icon = Icons.Default.Lock,
+                    iconBackground = Brush.linearGradient(listOf(Color(0xFF42A5F5), Color(0xFF1E88E5))),
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://google.tama.ac.jp/unicornidm/user/tama/password/"))
+                        context.startActivity(intent)
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // App settings
             SectionHeader("アプリ設定")
-            SettingsItem(
-                title = "ダークモード",
-                icon = DarkModeIcon,
-                iconTint = Color(0xFF3F51B5),
-                detail = viewModel.getDarkModeText(darkMode),
-                onClick = onNavigateToDarkMode
-            )
+            SettingsCard {
+                SettingsRow(
+                    title = "ダークモード",
+                    icon = DarkModeIcon,
+                    iconBackground = Brush.linearGradient(listOf(Color(0xFF5C6BC0), Color(0xFF3949AB))),
+                    detail = viewModel.getDarkModeText(darkMode),
+                    onClick = onNavigateToDarkMode
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Other section
             SectionHeader("その他")
-            SettingsItem(
-                title = "利用規約",
-                icon = DocIcon,
-                iconTint = Color.Gray,
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/user-agreement"))
-                    context.startActivity(intent)
-                }
-            )
-            HorizontalDivider(modifier = Modifier.padding(start = 48.dp))
-            SettingsItem(
-                title = "プライバシーポリシー",
-                icon = PrivacyIcon,
-                iconTint = Color(0xFF2196F3),
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/policy"))
-                    context.startActivity(intent)
-                }
-            )
-            HorizontalDivider(modifier = Modifier.padding(start = 48.dp))
-            SettingsItem(
-                title = "フィードバック",
-                icon = FeedbackIcon,
-                iconTint = Color(0xFF009688),
-                onClick = {
-                    val intent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:admin@ukenn.top?subject=${Uri.encode("TUTnext アプリフィードバック")}")
+            SettingsCard {
+                SettingsRow(
+                    title = "利用規約",
+                    icon = DocIcon,
+                    iconBackground = Brush.linearGradient(listOf(Color(0xFF9E9E9E), Color(0xFF757575))),
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/user-agreement"))
+                        context.startActivity(intent)
                     }
-                    context.startActivity(intent)
-                }
-            )
+                )
+                HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsRow(
+                    title = "プライバシーポリシー",
+                    icon = PrivacyIcon,
+                    iconBackground = Brush.linearGradient(listOf(Color(0xFF42A5F5), Color(0xFF1E88E5))),
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/policy"))
+                        context.startActivity(intent)
+                    }
+                )
+                HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsRow(
+                    title = "フィードバック",
+                    icon = FeedbackIcon,
+                    iconBackground = Brush.linearGradient(listOf(Color(0xFF26A69A), Color(0xFF00897B))),
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:admin@ukenn.top?subject=${Uri.encode("TUTnext アプリフィードバック")}")
+                        }
+                        context.startActivity(intent)
+                    }
+                )
+                HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsRow(
+                    title = "レビューを書く",
+                    icon = Icons.Default.Star,
+                    iconBackground = Brush.linearGradient(listOf(Color(0xFFFFCA28), Color(0xFFFFA000))),
+                    onClick = {
+                        // Open Play Store listing (placeholder)
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps"))
+                        context.startActivity(intent)
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Logout
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                TextButton(
-                    onClick = { viewModel.logout(onLogout) },
+            SettingsCard {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp),
-                    enabled = !uiState.isLoggingOut
+                        .clickable(enabled = !uiState.isLoggingOut) { viewModel.logout(onLogout) }
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (uiState.isLoggingOut) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                        Spacer(modifier = Modifier.width(8.dp))
+                    // Red icon badge
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                Brush.linearGradient(listOf(Color(0xFFEF5350), Color(0xFFD32F2F)))
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState.isLoggingOut) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp,
+                                color = Color.White
+                            )
+                        } else {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
-                    Icon(
-                        Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         "ログアウト",
                         color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
 
-            // App version
-            Spacer(modifier = Modifier.height(32.dp))
+            // App version footer
+            Spacer(modifier = Modifier.height(24.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -210,12 +251,18 @@ private fun UserInfoSection(fullName: String, username: String, initials: String
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Avatar
-        androidx.compose.foundation.layout.Box(
+        // Avatar with red gradient
+        Box(
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
-                .background(Color.Red),
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFFEF5350), Color(0xFFC62828)),
+                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        end = androidx.compose.ui.geometry.Offset(60f, 60f)
+                    )
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -248,52 +295,79 @@ private fun SectionHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-        modifier = Modifier.padding(bottom = 8.dp)
+        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
     )
 }
 
 @Composable
-private fun SettingsItem(
+private fun SettingsCard(content: @Composable () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun SettingsRow(
     title: String,
     icon: ImageVector,
-    iconTint: Color,
+    iconBackground: Brush,
     detail: String? = null,
     onClick: () -> Unit
 ) {
-    TextButton(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        // 28x28 icon badge with gradient background + 6dp corner radius
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(iconBackground),
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 icon,
                 contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(20.dp)
+                tint = Color.White,
+                modifier = Modifier.size(14.dp)
             )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (detail != null) {
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = detail,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            }
         }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        if (detail != null) {
+            Text(
+                text = detail,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+        }
+        Icon(
+            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
-// Simple icon constants using material icons
-private val DarkModeIcon = Icons.Default.Lock // placeholder - moon icon not in default set
-private val DocIcon = Icons.Default.Lock
-private val PrivacyIcon = Icons.Default.Lock
-private val FeedbackIcon = Icons.Default.Lock
+// Icon references using available Material icons
+private val DarkModeIcon = Icons.Default.Lock // moon - closest available
+private val DocIcon = Icons.Default.DateRange // doc placeholder
+private val PrivacyIcon = Icons.Default.Lock // privacy/hand placeholder
+private val FeedbackIcon = Icons.Default.Email // feedback envelope

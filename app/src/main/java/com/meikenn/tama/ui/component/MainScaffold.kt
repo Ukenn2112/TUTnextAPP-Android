@@ -5,27 +5,35 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -65,16 +73,16 @@ fun MainScaffold(
 
     val tabs = remember {
         listOf(
-            BottomTab("バス", Icons.Default.DateRange, Route.BUS),
-            BottomTab("時間割", Icons.Default.DateRange, Route.TIMETABLE),
-            BottomTab("課題", Icons.Default.Edit, Route.ASSIGNMENT),
-            BottomTab("その他", Icons.Default.MoreVert, "more")
+            BottomTab("バス", Icons.Default.DirectionsBus, Route.BUS),
+            BottomTab("時間割", Icons.Default.CalendarMonth, Route.TIMETABLE),
+            BottomTab("課題", Icons.Default.EditNote, Route.ASSIGNMENT),
+            BottomTab("その他", Icons.Default.MoreHoriz, "more")
         )
     }
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = {
                     Text(
                         text = "TUTnext",
@@ -83,13 +91,13 @@ fun MainScaffold(
                     )
                 },
                 actions = {
-                    // User avatar
+                    // User avatar - 30x30 red circle with white initials
                     Box(
                         modifier = Modifier
                             .padding(end = 12.dp)
-                            .size(32.dp)
+                            .size(30.dp)
                             .clip(CircleShape)
-                            .background(Color.Red)
+                            .background(Color(0xFFD32F2F))
                             .clickable {
                                 navController.navigate(Route.SETTINGS)
                             },
@@ -122,6 +130,13 @@ fun MainScaffold(
                                     ) {
                                         DropdownMenuItem(
                                             text = { Text("年間予定") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.CalendarMonth,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
                                             onClick = {
                                                 showMoreMenu = false
                                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tamauniv.jp/campuslife/calendar"))
@@ -130,15 +145,44 @@ fun MainScaffold(
                                         )
                                         DropdownMenuItem(
                                             text = { Text("スマホサイト") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Smartphone,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
                                             onClick = {
                                                 showMoreMenu = false
                                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://next.tama.ac.jp"))
                                                 context.startActivity(intent)
                                             }
                                         )
+                                        DropdownMenuItem(
+                                            text = { Text("たまゆに") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Language,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
+                                            onClick = {
+                                                showMoreMenu = false
+                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tamauniv.jp"))
+                                                context.startActivity(intent)
+                                            }
+                                        )
                                         HorizontalDivider()
                                         DropdownMenuItem(
                                             text = { Text("教師メール") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Email,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
                                             onClick = {
                                                 showMoreMenu = false
                                                 navController.navigate(Route.TEACHER_EMAIL)
@@ -146,6 +190,13 @@ fun MainScaffold(
                                         )
                                         DropdownMenuItem(
                                             text = { Text("印刷システム") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Print,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
                                             onClick = {
                                                 showMoreMenu = false
                                                 navController.navigate(Route.PRINT_SYSTEM)
@@ -154,6 +205,13 @@ fun MainScaffold(
                                         HorizontalDivider()
                                         DropdownMenuItem(
                                             text = { Text("設定") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Settings,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
                                             onClick = {
                                                 showMoreMenu = false
                                                 navController.navigate(Route.SETTINGS)

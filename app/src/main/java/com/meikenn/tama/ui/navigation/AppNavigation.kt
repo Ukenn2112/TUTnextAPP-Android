@@ -51,13 +51,15 @@ fun AppNavigation(
                     TimetableScreen(
                         onCourseClick = { course ->
                             val encodedName = Uri.encode(course.name)
-                            val route = "courseDetail/${course.jugyoCd ?: ""}/${course.academicYear ?: 0}/${course.courseYear ?: 0}/${course.courseTerm ?: 0}/${Uri.encode(course.jugyoKbn ?: "")}/${course.weekday ?: 0}/${course.period ?: 0}?name=$encodedName"
+                            val encodedTeacher = Uri.encode(course.teacher)
+                            val encodedRoom = Uri.encode(course.room)
+                            val route = "courseDetail/${course.jugyoCd ?: ""}/${course.academicYear ?: 0}/${course.courseYear ?: 0}/${course.courseTerm ?: 0}/${Uri.encode(course.jugyoKbn ?: "")}/${course.weekday ?: 0}/${course.period ?: 0}?name=$encodedName&teacher=$encodedTeacher&room=$encodedRoom"
                             navController.navigate(route)
                         }
                     )
                 }
                 composable(
-                    route = "courseDetail/{jugyoCd}/{nendo}/{kaikoNendo}/{gakkiNo}/{jugyoKbn}/{kaikoYobi}/{jigenNo}?name={name}",
+                    route = "courseDetail/{jugyoCd}/{nendo}/{kaikoNendo}/{gakkiNo}/{jugyoKbn}/{kaikoYobi}/{jigenNo}?name={name}&teacher={teacher}&room={room}",
                     arguments = listOf(
                         navArgument("jugyoCd") { type = NavType.StringType },
                         navArgument("nendo") { type = NavType.IntType },
@@ -66,7 +68,9 @@ fun AppNavigation(
                         navArgument("jugyoKbn") { type = NavType.StringType },
                         navArgument("kaikoYobi") { type = NavType.IntType },
                         navArgument("jigenNo") { type = NavType.IntType },
-                        navArgument("name") { type = NavType.StringType; defaultValue = "" }
+                        navArgument("name") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("teacher") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("room") { type = NavType.StringType; defaultValue = "" }
                     )
                 ) { backStackEntry ->
                     val detailViewModel: CourseDetailViewModel = hiltViewModel()
@@ -80,7 +84,9 @@ fun AppNavigation(
                             gakkiNo = args.getInt("gakkiNo"),
                             jugyoKbn = args.getString("jugyoKbn") ?: "",
                             kaikoYobi = args.getInt("kaikoYobi"),
-                            jigenNo = args.getInt("jigenNo")
+                            jigenNo = args.getInt("jigenNo"),
+                            teacherName = args.getString("teacher") ?: "",
+                            roomName = args.getString("room") ?: ""
                         )
                     }
                     CourseDetailScreen(

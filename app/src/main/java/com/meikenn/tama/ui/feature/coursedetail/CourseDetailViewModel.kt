@@ -2,6 +2,8 @@ package com.meikenn.tama.ui.feature.coursedetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.meikenn.tama.data.local.dao.CourseColorDao
+import com.meikenn.tama.data.local.entity.CourseColorEntity
 import com.meikenn.tama.data.repository.CourseDetailRepository
 import com.meikenn.tama.domain.model.CourseDetail
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,12 +20,18 @@ data class CourseDetailUiState(
     val isSavingMemo: Boolean = false,
     val error: String? = null,
     val memoText: String = "",
-    val memoSaved: Boolean = false
+    val memoSaved: Boolean = false,
+    val memoHasChanges: Boolean = false,
+    val colorIndex: Int = 0,
+    val periodInfo: String = "",
+    val teacherName: String = "",
+    val roomName: String = ""
 )
 
 @HiltViewModel
 class CourseDetailViewModel @Inject constructor(
-    private val courseDetailRepository: CourseDetailRepository
+    private val courseDetailRepository: CourseDetailRepository,
+    private val courseColorDao: CourseColorDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CourseDetailUiState())
@@ -31,6 +39,7 @@ class CourseDetailViewModel @Inject constructor(
 
     private var currentJugyoCd: String = ""
     private var currentNendo: Int = 0
+    private var originalMemo: String = ""
 
     fun loadCourseDetail(
         courseName: String,
@@ -40,18 +49,39 @@ class CourseDetailViewModel @Inject constructor(
         gakkiNo: Int,
         jugyoKbn: String,
         kaikoYobi: Int,
-        jigenNo: Int
+        jigenNo: Int,
+        teacherName: String = "",
+        roomName: String = ""
     ) {
         currentJugyoCd = jugyoCd
         currentNendo = nendo
-        _uiState.value = _uiState.value.copy(courseName = courseName, isLoading = true, error = null)
+
+        // Build period info from navigation params
+        val weekdays = listOf("月", "火", "水", "木", "金", "土", "日")
+        val periodInfo = if (kaikoYobi in 1..7 && jigenNo > 0) {
+            "${weekdays[kaikoYobi - 1]}曜日 ${jigenNo}限"
+        } else ""
+
+        _uiState.value = _uiState.value.copy(
+            courseName = courseName,
+            isLoading = true,
+            error = null,
+            periodInfo = periodInfo,
+            teacherName = teacherName,
+            roomName = roomName
+        )
 
         viewModelScope.launch {
+            // Load color preference
+            val colorEntity = courseColorDao.getColor(jugyoCd)
+            _uiState.value = _uiState.value.copy(colorIndex = colorEntity?.colorIndex ?: 0)
+
             val result = courseDetailRepository.getCourseDetail(
                 jugyoCd, nendo, kaikoNendo, gakkiNo, jugyoKbn, kaikoYobi, jigenNo
             )
             result.fold(
                 onSuccess = { detail ->
+                    originalMemo = detail.memo
                     _uiState.value = _uiState.value.copy(
                         courseDetail = detail,
                         memoText = detail.memo,
@@ -69,7 +99,11 @@ class CourseDetailViewModel @Inject constructor(
     }
 
     fun onMemoChanged(text: String) {
-        _uiState.value = _uiState.value.copy(memoText = text, memoSaved = false)
+        _uiState.value = _uiState.value.copy(
+            memoText = text,
+            memoSaved = false,
+            memoHasChanges = text != originalMemo
+        )
     }
 
     fun saveMemo() {
@@ -80,7 +114,12 @@ class CourseDetailViewModel @Inject constructor(
             val result = courseDetailRepository.saveMemo(currentJugyoCd, currentNendo, memo)
             result.fold(
                 onSuccess = {
-                    _uiState.value = _uiState.value.copy(isSavingMemo = false, memoSaved = true)
+                    originalMemo = memo
+                    _uiState.value = _uiState.value.copy(
+                        isSavingMemo = false,
+                        memoSaved = true,
+                        memoHasChanges = false
+                    )
                 },
                 onFailure = { e ->
                     _uiState.value = _uiState.value.copy(
@@ -89,6 +128,13 @@ class CourseDetailViewModel @Inject constructor(
                     )
                 }
             )
+        }
+    }
+
+    fun onColorSelected(index: Int) {
+        _uiState.value = _uiState.value.copy(colorIndex = index)
+        viewModelScope.launch {
+            courseColorDao.insertColor(CourseColorEntity(jugyoCd = currentJugyoCd, colorIndex = index))
         }
     }
 }
