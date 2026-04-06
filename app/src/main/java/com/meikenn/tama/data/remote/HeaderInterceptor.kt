@@ -7,10 +7,15 @@ import javax.inject.Inject
 
 class HeaderInterceptor @Inject constructor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request().newBuilder()
-            .header("Content-Type", Constants.CONTENT_TYPE_JSON)
+        val original = chain.request()
+        val builder = original.newBuilder()
             .header("User-Agent", Constants.USER_AGENT)
-            .build()
-        return chain.proceed(request)
+
+        // Only add Content-Type for requests with a body (POST, PUT, PATCH)
+        if (original.body != null) {
+            builder.header("Content-Type", Constants.CONTENT_TYPE_JSON)
+        }
+
+        return chain.proceed(builder.build())
     }
 }

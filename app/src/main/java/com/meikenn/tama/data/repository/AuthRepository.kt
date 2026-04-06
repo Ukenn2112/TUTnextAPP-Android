@@ -131,7 +131,7 @@ class AuthRepository @Inject constructor(
             val gaksekiCd = data.get("gaksekiCd")?.asString
                 ?: data.get("jinjiCd")?.asString
                 ?: userId
-            val rawPassword = data.get("encryptedLoginPassword")?.asString ?: ""
+            val rawPassword = data.get("encryptedPassword")?.asString ?: ""
             val encodedPassword = PasswordEncoder.encodePassword(rawPassword)
             val allKeijiMidokCnt = data.get("allKeijiMidokCnt")?.asInt
             val maxJigenNo = data.get("maxJigenNo")?.asInt
