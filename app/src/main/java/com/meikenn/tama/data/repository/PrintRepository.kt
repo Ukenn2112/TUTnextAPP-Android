@@ -91,7 +91,7 @@ class PrintRepository @Inject constructor(
         // Save to Room
         printRecordDao.insert(
             PrintRecordEntity(
-                printNumber = result.printNumber,
+                prCode = result.printNumber,
                 fileName = result.fileName,
                 expiryDate = result.expiryDate,
                 pageCount = result.pageCount,
@@ -154,7 +154,7 @@ class PrintRepository @Inject constructor(
         printRecordDao.clearExpired()
         return printRecordDao.getValidRecords().map { entity ->
             PrintResult(
-                printNumber = entity.printNumber,
+                printNumber = entity.prCode,
                 fileName = entity.fileName,
                 expiryDate = entity.expiryDate,
                 pageCount = entity.pageCount,

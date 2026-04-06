@@ -1,6 +1,7 @@
 package com.meikenn.tama.data.remote
 
 import android.content.SharedPreferences
+import android.util.Base64
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -40,8 +41,16 @@ class CookieJarImpl @Inject constructor(
         return serialized.mapNotNull { deserializeCookie(it) }
     }
 
+    private fun encode(value: String): String {
+        return Base64.encodeToString(value.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
+    }
+
+    private fun decode(value: String): String {
+        return String(Base64.decode(value, Base64.NO_WRAP), Charsets.UTF_8)
+    }
+
     private fun serializeCookie(cookie: Cookie): String {
-        return "${cookie.name}|${cookie.value}|${cookie.domain}|${cookie.path}|${cookie.expiresAt}|${cookie.secure}|${cookie.httpOnly}"
+        return "${encode(cookie.name)}|${encode(cookie.value)}|${encode(cookie.domain)}|${encode(cookie.path)}|${cookie.expiresAt}|${cookie.secure}|${cookie.httpOnly}"
     }
 
     private fun deserializeCookie(str: String): Cookie? {
@@ -49,10 +58,10 @@ class CookieJarImpl @Inject constructor(
             val parts = str.split("|")
             if (parts.size < 7) return null
             Cookie.Builder()
-                .name(parts[0])
-                .value(parts[1])
-                .domain(parts[2])
-                .path(parts[3])
+                .name(decode(parts[0]))
+                .value(decode(parts[1]))
+                .domain(decode(parts[2]))
+                .path(decode(parts[3]))
                 .expiresAt(parts[4].toLong())
                 .apply {
                     if (parts[5].toBoolean()) secure()

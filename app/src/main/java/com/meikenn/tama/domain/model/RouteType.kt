@@ -6,6 +6,7 @@ enum class RouteType(val displayName: String, val jsonKey: String) {
     FROM_SCHOOL_TO_SEISEKI("聖蹟桜ヶ丘駅行", "fromSchoolToSeiseki"),
     FROM_SCHOOL_TO_NAGAYAMA("永山駅行", "fromSchoolToNagayama");
 
-    val isDeparture: Boolean
+    /** True if departing FROM school (school is the origin) */
+    val isFromSchool: Boolean
         get() = this == FROM_SCHOOL_TO_SEISEKI || this == FROM_SCHOOL_TO_NAGAYAMA
 }

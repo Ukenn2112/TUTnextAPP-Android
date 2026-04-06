@@ -1,5 +1,9 @@
 package com.meikenn.tama.domain.model
 
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 data class CourseDetail(
     val announcements: List<Announcement> = emptyList(),
     val attendance: Attendance = Attendance(),
@@ -16,8 +20,13 @@ data class Announcement(
 ) {
     val formattedDate: String
         get() {
-            val sdf = java.text.SimpleDateFormat("yyyy/MM/dd HH:mm", java.util.Locale.JAPAN)
-            return sdf.format(java.util.Date(date))
+            return try {
+                // SimpleDateFormat created per-call (safe for Compose recomposition)
+                val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.JAPAN)
+                sdf.format(Date(date))
+            } catch (e: Exception) {
+                ""
+            }
         }
 
     val isRead: Boolean get() = torkDate != null

@@ -17,4 +17,6 @@ object Constants {
 
     const val PRINT_CREDENTIALS_ID = "836-tamauniv01"
     const val PRINT_CREDENTIALS_PASSWORD = "tama1989"
+
+    const val PRINT_TENANT_PATH = "api/tenants/2102%3ACOD1/user/prints/"
 }

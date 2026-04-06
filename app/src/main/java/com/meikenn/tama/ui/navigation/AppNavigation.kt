@@ -1,5 +1,6 @@
 package com.meikenn.tama.ui.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,7 +50,8 @@ fun AppNavigation(
                 composable(Route.TIMETABLE) {
                     TimetableScreen(
                         onCourseClick = { course ->
-                            val route = "courseDetail/${course.jugyoCd ?: ""}/${course.academicYear ?: 0}/${course.courseYear ?: 0}/${course.courseTerm ?: 0}/${course.jugyoKbn ?: ""}/${course.weekday ?: 0}/${course.period ?: 0}?name=${course.name}"
+                            val encodedName = Uri.encode(course.name)
+                            val route = "courseDetail/${course.jugyoCd ?: ""}/${course.academicYear ?: 0}/${course.courseYear ?: 0}/${course.courseTerm ?: 0}/${Uri.encode(course.jugyoKbn ?: "")}/${course.weekday ?: 0}/${course.period ?: 0}?name=$encodedName"
                             navController.navigate(route)
                         }
                     )
@@ -67,10 +69,10 @@ fun AppNavigation(
                         navArgument("name") { type = NavType.StringType; defaultValue = "" }
                     )
                 ) { backStackEntry ->
-                    val viewModel: CourseDetailViewModel = hiltViewModel()
-                    val args = backStackEntry.arguments!!
+                    val detailViewModel: CourseDetailViewModel = hiltViewModel()
+                    val args = backStackEntry.arguments ?: return@composable
                     LaunchedEffect(Unit) {
-                        viewModel.loadCourseDetail(
+                        detailViewModel.loadCourseDetail(
                             courseName = args.getString("name") ?: "",
                             jugyoCd = args.getString("jugyoCd") ?: "",
                             nendo = args.getInt("nendo"),
@@ -83,7 +85,7 @@ fun AppNavigation(
                     }
                     CourseDetailScreen(
                         onNavigateBack = { navController.popBackStack() },
-                        viewModel = viewModel
+                        viewModel = detailViewModel
                     )
                 }
                 composable(Route.ASSIGNMENT) {

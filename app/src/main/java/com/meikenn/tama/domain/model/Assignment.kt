@@ -1,6 +1,5 @@
 package com.meikenn.tama.domain.model
 
-import java.util.Calendar
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
@@ -15,30 +14,36 @@ data class Assignment(
     val url: String = ""
 ) {
     val isOverdue: Boolean
-        get() = Date().after(dueDate)
+        get() = dueDate.before(Date())
 
     val isUrgent: Boolean
         get() {
             if (isOverdue) return false
             val diffMs = dueDate.time - System.currentTimeMillis()
-            val diffHours = TimeUnit.MILLISECONDS.toHours(diffMs)
-            return diffHours < 2
+            return TimeUnit.MILLISECONDS.toHours(diffMs) < 2
         }
 
     val remainingTimeText: String
         get() {
-            val now = Date()
-            if (now.after(dueDate)) return "期限切れ"
+            if (isOverdue) return "期限切れ"
 
-            val diffMs = dueDate.time - now.time
-            val days = TimeUnit.MILLISECONDS.toDays(diffMs)
-            val hours = TimeUnit.MILLISECONDS.toHours(diffMs)
-            val minutes = TimeUnit.MILLISECONDS.toMinutes(diffMs)
+            val diffMs = dueDate.time - System.currentTimeMillis()
+            val totalDays = TimeUnit.MILLISECONDS.toDays(diffMs)
+            val totalHours = TimeUnit.MILLISECONDS.toHours(diffMs)
+            val totalMinutes = TimeUnit.MILLISECONDS.toMinutes(diffMs)
 
             return when {
-                days > 0 -> "${days}日"
-                hours > 0 -> "${hours}時間"
-                minutes > 0 -> "${minutes}分"
+                totalDays > 0 -> {
+                    val remainingHours = totalHours - totalDays * 24
+                    if (remainingHours > 0) "${totalDays}日${remainingHours}時間"
+                    else "${totalDays}日"
+                }
+                totalHours > 0 -> {
+                    val remainingMinutes = totalMinutes - totalHours * 60
+                    if (remainingMinutes > 0) "${totalHours}時間${remainingMinutes}分"
+                    else "${totalHours}時間"
+                }
+                totalMinutes > 0 -> "${totalMinutes}分"
                 else -> "まもなく期限"
             }
         }
@@ -48,7 +53,7 @@ data class Assignment(
 
     /** Fingerprint for deduplication (id changes every request) */
     val fingerprint: String
-        get() = "$courseId-$title-${dueDate.time / 1000}"
+        get() = "$courseId-$title-${dueDate.time}"
 }
 
 enum class AssignmentStatus {

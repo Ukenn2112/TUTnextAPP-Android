@@ -22,6 +22,10 @@ class PreferencesManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
+        const val DARK_MODE_SYSTEM = 0
+        const val DARK_MODE_LIGHT = 1
+        const val DARK_MODE_DARK = 2
+
         val DARK_MODE = intPreferencesKey("dark_mode") // 0=system, 1=light, 2=dark
         val SEMESTER_YEAR = intPreferencesKey("semester_year")
         val SEMESTER_TERM_NO = intPreferencesKey("semester_term_no")
