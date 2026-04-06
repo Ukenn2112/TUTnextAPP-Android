@@ -11,6 +11,7 @@ import com.meikenn.tama.data.remote.ApiService
 import com.meikenn.tama.data.remote.CookieJarImpl
 import com.meikenn.tama.data.remote.ExternalApiService
 import com.meikenn.tama.data.remote.HeaderInterceptor
+import com.meikenn.tama.data.remote.PercentDecodingInterceptor
 import com.meikenn.tama.util.Constants
 import dagger.Module
 import dagger.Provides
@@ -59,7 +60,8 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         cookieJar: CookieJarImpl,
-        headerInterceptor: HeaderInterceptor
+        headerInterceptor: HeaderInterceptor,
+        percentDecodingInterceptor: PercentDecodingInterceptor
     ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
@@ -68,6 +70,7 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .cookieJar(cookieJar)
             .addInterceptor(headerInterceptor)
+            .addInterceptor(percentDecodingInterceptor)
             .addInterceptor(logging)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
