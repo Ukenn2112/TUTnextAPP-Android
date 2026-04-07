@@ -60,11 +60,28 @@ fun AppNavigation(
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle()
     val userInitials by viewModel.userInitials.collectAsStateWithLifecycle()
 
-    if (!isLoggedIn) {
-        LoginScreen(onLoginSuccess = { viewModel.refreshLoginState() })
-        return
+    // Task 3: Animate login → main screen transition
+    AnimatedContent(
+        targetState = isLoggedIn,
+        transitionSpec = {
+            fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+        },
+        label = "LoginMainTransition"
+    ) { loggedIn ->
+        if (!loggedIn) {
+            LoginScreen(onLoginSuccess = { viewModel.refreshLoginState() })
+        } else {
+            MainContent(viewModel = viewModel, userInitials = userInitials)
+        }
     }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainContent(
+    viewModel: AppNavigationViewModel,
+    userInitials: String
+) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
 
@@ -74,8 +91,6 @@ fun AppNavigation(
 
     // Course detail params (stored when tapping a course)
     var selectedCourse by remember { mutableStateOf<Course?>(null) }
-
-    // Track if we're showing dark mode within the settings sheet
 
     fun showSheet(sheet: SheetContent) {
         currentSheet = sheet
@@ -96,9 +111,16 @@ fun AppNavigation(
         onPrintSystemClick = { showSheet(SheetContent.PRINT_SYSTEM) }
     ) { paddingValues ->
         CompositionLocalProvider(LocalScaffoldPadding provides paddingValues) {
+            // Task 1: Tab navigation transitions
             NavHost(
                 navController = navController,
-                startDestination = Route.TIMETABLE
+                startDestination = Route.TIMETABLE,
+                enterTransition = {
+                    fadeIn(tween(200)) + slideInHorizontally(tween(200))
+                },
+                exitTransition = {
+                    fadeOut(tween(150))
+                }
             ) {
                 composable(Route.BUS) {
                     BusScheduleScreen()
@@ -128,59 +150,65 @@ fun AppNavigation(
             windowInsets = WindowInsets.statusBars,
             modifier = Modifier.fillMaxHeight(0.93f)
         ) {
-            when (currentSheet) {
-                SheetContent.SETTINGS -> {
-                    SettingsScreen(
-                        onNavigateBack = { hideSheet() },
-                        onNavigateToDarkMode = { currentSheet = SheetContent.SETTINGS_DARK_MODE },
-                        onLogout = {
-                            hideSheet()
-                            viewModel.refreshLoginState()
-                        }
-                    )
-                }
-                SheetContent.SETTINGS_DARK_MODE -> {
-                    DarkModeSettingsScreen(
-                        onNavigateBack = { currentSheet = SheetContent.SETTINGS }
-                    )
-                }
-                SheetContent.TEACHER_EMAIL -> {
-                    TeacherEmailListScreen(
-                        onNavigateBack = { hideSheet() }
-                    )
-                }
-                SheetContent.PRINT_SYSTEM -> {
-                    PrintSystemScreen(
-                        onNavigateBack = { hideSheet() }
-                    )
-                }
-                SheetContent.COURSE_DETAIL -> {
-                    val course = selectedCourse
-                    if (course != null) {
-                        val detailViewModel: CourseDetailViewModel = hiltViewModel()
-                        LaunchedEffect(course) {
-                            detailViewModel.loadCourseDetail(
-                                courseName = course.name,
-                                jugyoCd = course.jugyoCd ?: "",
-                                nendo = course.academicYear ?: 0,
-                                kaikoNendo = course.courseYear ?: 0,
-                                gakkiNo = course.courseTerm ?: 0,
-                                jugyoKbn = course.jugyoKbn ?: "",
-                                kaikoYobi = course.weekday ?: 0,
-                                jigenNo = course.period ?: 0,
-                                teacherName = course.teacher,
-                                roomName = course.room
-                            )
-                        }
-                        CourseDetailScreen(
+            // Task 2: Crossfade for bottom sheet content transitions
+            Crossfade(
+                targetState = currentSheet,
+                animationSpec = tween(200),
+                label = "SheetContentCrossfade"
+            ) { sheet ->
+                when (sheet) {
+                    SheetContent.SETTINGS -> {
+                        SettingsScreen(
                             onNavigateBack = { hideSheet() },
-                            viewModel = detailViewModel
+                            onNavigateToDarkMode = { currentSheet = SheetContent.SETTINGS_DARK_MODE },
+                            onLogout = {
+                                hideSheet()
+                                viewModel.refreshLoginState()
+                            }
                         )
                     }
+                    SheetContent.SETTINGS_DARK_MODE -> {
+                        DarkModeSettingsScreen(
+                            onNavigateBack = { currentSheet = SheetContent.SETTINGS }
+                        )
+                    }
+                    SheetContent.TEACHER_EMAIL -> {
+                        TeacherEmailListScreen(
+                            onNavigateBack = { hideSheet() }
+                        )
+                    }
+                    SheetContent.PRINT_SYSTEM -> {
+                        PrintSystemScreen(
+                            onNavigateBack = { hideSheet() }
+                        )
+                    }
+                    SheetContent.COURSE_DETAIL -> {
+                        val course = selectedCourse
+                        if (course != null) {
+                            val detailViewModel: CourseDetailViewModel = hiltViewModel()
+                            LaunchedEffect(course) {
+                                detailViewModel.loadCourseDetail(
+                                    courseName = course.name,
+                                    jugyoCd = course.jugyoCd ?: "",
+                                    nendo = course.academicYear ?: 0,
+                                    kaikoNendo = course.courseYear ?: 0,
+                                    gakkiNo = course.courseTerm ?: 0,
+                                    jugyoKbn = course.jugyoKbn ?: "",
+                                    kaikoYobi = course.weekday ?: 0,
+                                    jigenNo = course.period ?: 0,
+                                    teacherName = course.teacher,
+                                    roomName = course.room
+                                )
+                            }
+                            CourseDetailScreen(
+                                onNavigateBack = { hideSheet() },
+                                viewModel = detailViewModel
+                            )
+                        }
+                    }
+                    else -> {}
                 }
-                else -> {}
             }
         }
     }
-
 }

@@ -2,10 +2,20 @@ package com.meikenn.tama.ui.feature.assignment
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,24 +24,25 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
@@ -42,9 +53,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.ui.component.AssignmentCard
+import com.meikenn.tama.ui.component.shimmerEffect
+import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
 import com.meikenn.tama.ui.theme.AppColors
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun AssignmentScreen(
     viewModel: AssignmentViewModel = hiltViewModel()
 ) {
@@ -71,18 +85,30 @@ fun AssignmentScreen(
             }
 
             uiState.error != null && uiState.assignments.isEmpty() -> {
-                ErrorState(
-                    message = uiState.error.orEmpty(),
-                    onRetry = viewModel::loadAssignments,
-                    modifier = Modifier.fillMaxSize()
-                )
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(300)) + slideInVertically(tween(300)),
+                    exit = fadeOut(tween(300)) + slideOutVertically(tween(300))
+                ) {
+                    ErrorState(
+                        message = uiState.error.orEmpty(),
+                        onRetry = viewModel::loadAssignments,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             uiState.assignments.isEmpty() -> {
-                EmptyState(
-                    onRetry = viewModel::loadAssignments,
-                    modifier = Modifier.fillMaxSize()
-                )
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(300)) + slideInVertically(tween(300)),
+                    exit = fadeOut(tween(300)) + slideOutVertically(tween(300))
+                ) {
+                    EmptyState(
+                        onRetry = viewModel::loadAssignments,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             else -> {
@@ -131,7 +157,8 @@ fun AssignmentScreen(
                                             )
                                             context.startActivity(intent)
                                         }
-                                    }
+                                    },
+                                    modifier = Modifier.animateItemPlacement()
                                 )
                             }
                         }
@@ -171,6 +198,13 @@ private fun FilterPill(
     onClick: () -> Unit
 ) {
     val selectedColor = AppColors.semantic.selectedFilter
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMedium),
+        label = "pillScale"
+    )
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) selectedColor.copy(alpha = 0.9f)
@@ -190,6 +224,7 @@ private fun FilterPill(
 
     Box(
         modifier = Modifier
+            .graphicsLayer(scaleX = scale, scaleY = scale)
             .then(
                 if (isSelected) {
                     Modifier.shadow(
@@ -202,7 +237,11 @@ private fun FilterPill(
             )
             .clip(shape)
             .background(backgroundColor)
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Text(
@@ -217,17 +256,48 @@ private fun FilterPill(
 @Composable
 private fun LoadingState(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CircularProgressIndicator()
-        Text(
-            text = "読み込み中...",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 12.dp)
-        )
+        repeat(4) {
+            // Card skeleton
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .shimmerEffect()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(16.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f))
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(12.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f))
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.3f)
+                            .height(12.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f))
+                    )
+                }
+            }
+        }
     }
 }
 

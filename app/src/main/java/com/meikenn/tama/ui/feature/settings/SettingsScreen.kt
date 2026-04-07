@@ -45,9 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.meikenn.tama.ui.theme.SettingsIconColors
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -106,7 +104,6 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "パスワード変更",
                     icon = Icons.Default.Lock,
-                    iconBackground = Brush.linearGradient(SettingsIconColors.busGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://google.tama.ac.jp/unicornidm/user/tama/password/"))
                         context.startActivity(intent)
@@ -122,7 +119,6 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "ダークモード",
                     icon = DarkModeIcon,
-                    iconBackground = Brush.linearGradient(SettingsIconColors.darkModeGradient),
                     detail = viewModel.getDarkModeText(darkMode),
                     onClick = onNavigateToDarkMode
                 )
@@ -136,42 +132,28 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "利用規約",
                     icon = DocIcon,
-                    iconBackground = Brush.linearGradient(SettingsIconColors.docGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/user-agreement"))
                         context.startActivity(intent)
                     }
                 )
-                HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                HorizontalDivider(modifier = Modifier.padding(start = 54.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 SettingsRow(
                     title = "プライバシーポリシー",
                     icon = PrivacyIcon,
-                    iconBackground = Brush.linearGradient(SettingsIconColors.privacyGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/policy"))
                         context.startActivity(intent)
                     }
                 )
-                HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                HorizontalDivider(modifier = Modifier.padding(start = 54.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 SettingsRow(
                     title = "フィードバック",
                     icon = FeedbackIcon,
-                    iconBackground = Brush.linearGradient(SettingsIconColors.feedbackGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:admin@ukenn.top?subject=${Uri.encode("TUTnext アプリフィードバック")}")
                         }
-                        context.startActivity(intent)
-                    }
-                )
-                HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.outlineVariant)
-                SettingsRow(
-                    title = "レビューを書く",
-                    icon = Icons.Default.Star,
-                    iconBackground = Brush.linearGradient(SettingsIconColors.settingsGradient),
-                    onClick = {
-                        // Open Play Store listing (placeholder)
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps"))
                         context.startActivity(intent)
                     }
                 )
@@ -185,35 +167,24 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable(enabled = !uiState.isLoggingOut) { viewModel.logout(onLogout) }
-                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Red icon badge
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .background(
-                                Brush.linearGradient(SettingsIconColors.logoutGradient)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (uiState.isLoggingOut) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(14.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ExitToApp,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
+                    if (uiState.isLoggingOut) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    } else {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         "ログアウト",
                         color = MaterialTheme.colorScheme.error,
@@ -254,18 +225,11 @@ private fun UserInfoSection(fullName: String, username: String, initials: String
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Avatar with red gradient
         Box(
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = SettingsIconColors.logoutGradient,
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset(60f, 60f)
-                    )
-                ),
+                .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -319,7 +283,7 @@ private fun SettingsCard(content: @Composable () -> Unit) {
 private fun SettingsRow(
     title: String,
     icon: ImageVector,
-    iconBackground: Brush,
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     detail: String? = null,
     onClick: () -> Unit
 ) {
@@ -327,25 +291,16 @@ private fun SettingsRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 28x28 icon badge with gradient background + 6dp corner radius
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(MaterialTheme.shapes.extraSmall)
-                .background(iconBackground),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(14.dp)
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
@@ -356,14 +311,14 @@ private fun SettingsRow(
             Text(
                 text = detail,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
         Icon(
             Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
             modifier = Modifier.size(20.dp)
         )
     }

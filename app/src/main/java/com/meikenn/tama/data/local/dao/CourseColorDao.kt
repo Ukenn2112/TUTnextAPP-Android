@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.meikenn.tama.data.local.entity.CourseColorEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CourseColorDao {
@@ -13,6 +14,9 @@ interface CourseColorDao {
 
     @Query("SELECT * FROM course_color")
     suspend fun getAll(): List<CourseColorEntity>
+
+    @Query("SELECT * FROM course_color")
+    fun getAllAsFlow(): Flow<List<CourseColorEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertColor(entity: CourseColorEntity)

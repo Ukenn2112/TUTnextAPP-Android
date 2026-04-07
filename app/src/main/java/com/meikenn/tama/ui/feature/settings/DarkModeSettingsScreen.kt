@@ -34,9 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.meikenn.tama.ui.theme.DarkModeColors
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,34 +78,9 @@ fun DarkModeSettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Sun icon preview
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(DarkModeColors.lightPreviewBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "\u2600",
-                        fontSize = 32.sp,
-                        color = DarkModeColors.lightPreviewIcon
-                    )
-                }
-                Spacer(modifier = Modifier.width(24.dp))
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(DarkModeColors.darkPreviewBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "\uD83C\uDF19",
-                        fontSize = 32.sp,
-                        color = DarkModeColors.darkPreviewIcon
-                    )
-                }
+                Text(text = "\u2600", fontSize = 48.sp)
+                Spacer(modifier = Modifier.width(32.dp))
+                Text(text = "\uD83C\uDF19", fontSize = 48.sp)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -122,27 +95,27 @@ fun DarkModeSettingsScreen(
             ) {
                 DarkModeOptionRow(
                     title = "システムに従う",
-                    iconBackground = Brush.linearGradient(DarkModeColors.systemOptionGradient),
+                    icon = "\u2699",
                     selected = currentMode == 0,
                     onClick = { viewModel.setDarkMode(0) }
                 )
                 HorizontalDivider(
-                    modifier = Modifier.padding(start = 52.dp),
+                    modifier = Modifier.padding(start = 54.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 DarkModeOptionRow(
                     title = "ライトモード",
-                    iconBackground = Brush.linearGradient(DarkModeColors.lightOptionGradient),
+                    icon = "\u2600",
                     selected = currentMode == 1,
                     onClick = { viewModel.setDarkMode(1) }
                 )
                 HorizontalDivider(
-                    modifier = Modifier.padding(start = 52.dp),
+                    modifier = Modifier.padding(start = 54.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 DarkModeOptionRow(
                     title = "ダークモード",
-                    iconBackground = Brush.linearGradient(DarkModeColors.darkOptionGradient),
+                    icon = "\uD83C\uDF19",
                     selected = currentMode == 2,
                     onClick = { viewModel.setDarkMode(2) }
                 )
@@ -163,7 +136,7 @@ fun DarkModeSettingsScreen(
 @Composable
 private fun DarkModeOptionRow(
     title: String,
-    iconBackground: Brush,
+    icon: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -171,29 +144,14 @@ private fun DarkModeOptionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 28x28 gradient badge
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(MaterialTheme.shapes.extraSmall)
-                .background(iconBackground),
-            contentAlignment = Alignment.Center
-        ) {
-            // Use unicode icons since Material doesn't have sun/moon
-            Text(
-                text = when {
-                    title.contains("ライト") -> "\u2600"
-                    title.contains("ダーク") -> "\uD83C\uDF19"
-                    else -> "\u2699"
-                },
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = icon,
+            fontSize = 22.sp
+        )
+        Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
@@ -205,7 +163,7 @@ private fun DarkModeOptionRow(
                 Icons.Default.Check,
                 contentDescription = "選択中",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
     }

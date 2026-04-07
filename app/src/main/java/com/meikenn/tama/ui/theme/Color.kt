@@ -93,6 +93,7 @@ val DarkSemanticColors = AppSemanticColors(
 )
 
 val LocalSemanticColors = staticCompositionLocalOf { LightSemanticColors }
+val LocalDarkTheme = staticCompositionLocalOf { false }
 
 // Convenience accessor
 object AppColors {

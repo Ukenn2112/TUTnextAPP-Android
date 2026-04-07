@@ -1,6 +1,5 @@
 package com.meikenn.tama.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
@@ -37,7 +36,7 @@ object CourseColors {
 
     @Composable
     fun getColor(index: Int): Color {
-        val presets = if (isSystemInDarkTheme()) presetsDark else presetsLight
+        val presets = if (LocalDarkTheme.current) presetsDark else presetsLight
         return presets.getOrElse(index) { presets[0] }
     }
 

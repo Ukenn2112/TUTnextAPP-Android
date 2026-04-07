@@ -1,14 +1,21 @@
 package com.meikenn.tama.ui.feature.login
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -33,6 +40,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
@@ -76,7 +84,7 @@ fun LoginScreen(
             text = "TUTnext へようこそ！\uD83D\uDC4B",
             fontSize = 25.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+            color = Color.Black,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 30.dp)
@@ -109,7 +117,7 @@ fun LoginScreen(
                 placeholder = "アカウント",
                 enabled = !uiState.isLoading,
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
+                    keyboardType = KeyboardType.Ascii,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
@@ -140,13 +148,26 @@ fun LoginScreen(
         }
 
         // Login button
+        val loginInteractionSource = remember { MutableInteractionSource() }
+        val isLoginPressed by loginInteractionSource.collectIsPressedAsState()
+        val loginScale by animateFloatAsState(
+            targetValue = if (isLoginPressed) 0.97f else 1f,
+            animationSpec = spring(
+                dampingRatio = 0.6f,
+                stiffness = Spring.StiffnessMedium
+            ),
+            label = "loginScale"
+        )
+
         Button(
             onClick = { viewModel.login() },
+            interactionSource = loginInteractionSource,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 30.dp)
                 .padding(top = 20.dp)
                 .height(50.dp)
+                .graphicsLayer(scaleX = loginScale, scaleY = loginScale)
                 .shadow(
                     elevation = 5.dp,
                     shape = RoundedCornerShape(50),
@@ -155,17 +176,17 @@ fun LoginScreen(
                 ),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.onBackground,
-                contentColor = MaterialTheme.colorScheme.background,
-                disabledContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                disabledContentColor = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+                containerColor = Color.Black,
+                contentColor = Color.White,
+                disabledContainerColor = Color.Black,
+                disabledContentColor = Color.White
             ),
             enabled = !uiState.isLoading
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.height(24.dp),
-                    color = MaterialTheme.colorScheme.background,
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -182,7 +203,7 @@ fun LoginScreen(
                 append("登録をすることで ")
             }
             pushStringAnnotation(tag = "URL", annotation = "https://tama.qaq.tw/user-agreement")
-            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)) {
+            withStyle(SpanStyle(color = Color(0xFF007AFF), fontSize = 12.sp)) {
                 append("利用規約")
             }
             pop()
@@ -229,15 +250,21 @@ private fun LoginTextField(
 
     val borderColor by animateColorAsState(
         targetValue = if (isFocused) {
-            MaterialTheme.colorScheme.primary
+            Color.Black
         } else {
-            MaterialTheme.colorScheme.outline
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         },
         animationSpec = tween(durationMillis = 200),
         label = "borderColor"
     )
 
-    val textColor = MaterialTheme.colorScheme.onSurface
+    val shadowElevation by animateDpAsState(
+        targetValue = if (isFocused) 0.dp else 0.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "shadowElevation"
+    )
+
+    val textColor = Color.Black
 
     BasicTextField(
         value = value,
@@ -248,7 +275,7 @@ private fun LoginTextField(
             fontSize = 18.sp,
             color = textColor
         ),
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        cursorBrush = SolidColor(Color.Black),
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -257,6 +284,10 @@ private fun LoginTextField(
             .onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }
+            .shadow(
+                elevation = shadowElevation,
+                shape = MaterialTheme.shapes.small
+            )
             .border(
                 width = 1.dp,
                 color = borderColor,

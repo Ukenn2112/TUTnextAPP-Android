@@ -1,5 +1,6 @@
 package com.meikenn.tama.ui.feature.coursedetail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -58,7 +59,7 @@ import com.meikenn.tama.domain.model.Announcement
 import com.meikenn.tama.domain.model.Attendance
 import com.meikenn.tama.ui.theme.CourseColors
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CourseDetailScreen(
     onNavigateBack: () -> Unit,
@@ -110,68 +111,72 @@ fun CourseDetailScreen(
                 ) {
                     // Hero header card
                     item {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        DetailCard {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                // Course name
-                                Text(
-                                    uiState.courseName,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // Period badge as capsule
-                                val courseColor = CourseColors.getColor(uiState.colorIndex)
-                                if (uiState.periodInfo.isNotEmpty()) {
-                                    Text(
-                                        text = uiState.periodInfo,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(50))
-                                            .background(courseColor.copy(alpha = 0.5f))
-                                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                }
-
-                                // Teacher info
-                                if (uiState.teacherName.isNotEmpty()) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            Icons.Default.Person,
-                                            contentDescription = "教員",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(modifier = Modifier.animateItemPlacement()) {
+                            Column {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                DetailCard {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        // Course name
                                         Text(
-                                            uiState.teacherName,
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            uiState.courseName,
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
-                                    }
-                                }
+                                        Spacer(modifier = Modifier.height(8.dp))
 
-                                // Room info
-                                if (uiState.roomName.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            Icons.Default.LocationOn,
-                                            contentDescription = "教室",
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            uiState.roomName,
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                        // Period badge as capsule
+                                        val courseColor = CourseColors.getColor(uiState.colorIndex)
+                                        if (uiState.periodInfo.isNotEmpty()) {
+                                            Text(
+                                                text = uiState.periodInfo,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(50))
+                                                    .background(courseColor.copy(alpha = 0.5f))
+                                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                        }
+
+                                        // Teacher info
+                                        if (uiState.teacherName.isNotEmpty()) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    Icons.Default.Person,
+                                                    contentDescription = "教員",
+                                                    modifier = Modifier.size(16.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    uiState.teacherName,
+                                                    fontSize = 14.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+
+                                        // Room info
+                                        if (uiState.roomName.isNotEmpty()) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    Icons.Default.LocationOn,
+                                                    contentDescription = "教室",
+                                                    modifier = Modifier.size(16.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    uiState.roomName,
+                                                    fontSize = 14.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -180,46 +185,48 @@ fun CourseDetailScreen(
 
                     // Announcements card
                     item {
-                        DetailCard {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                // Section header
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        Icons.Default.Notifications,
-                                        contentDescription = "掲示",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        "掲示情報",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        "${detail.announcements.size}",
-                                        fontSize = 13.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
+                        Box(modifier = Modifier.animateItemPlacement()) {
+                            DetailCard {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    // Section header
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Default.Notifications,
+                                            contentDescription = "掲示",
+                                            modifier = Modifier.size(18.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            "掲示情報",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            "${detail.announcements.size}",
+                                            fontSize = 13.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                if (detail.announcements.isEmpty()) {
-                                    Text(
-                                        "お知らせはありません",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                } else {
-                                    detail.announcements.forEachIndexed { index, announcement ->
-                                        if (index > 0) {
-                                            HorizontalDivider(
-                                                modifier = Modifier.padding(vertical = 8.dp),
-                                                color = MaterialTheme.colorScheme.outlineVariant
-                                            )
+                                    if (detail.announcements.isEmpty()) {
+                                        Text(
+                                            "お知らせはありません",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    } else {
+                                        detail.announcements.forEachIndexed { index, announcement ->
+                                            if (index > 0) {
+                                                HorizontalDivider(
+                                                    modifier = Modifier.padding(vertical = 8.dp),
+                                                    color = MaterialTheme.colorScheme.outlineVariant
+                                                )
+                                            }
+                                            AnnouncementRow(announcement)
                                         }
-                                        AnnouncementRow(announcement)
                                     }
                                 }
                             }
@@ -229,28 +236,34 @@ fun CourseDetailScreen(
                     // Attendance card
                     if (detail.syuKetuKanriFlg) {
                         item {
-                            AttendanceCard(detail.attendance)
+                            Box(modifier = Modifier.animateItemPlacement()) {
+                                AttendanceCard(detail.attendance)
+                            }
                         }
                     }
 
                     // Memo card
                     item {
-                        MemoCard(
-                            memoText = uiState.memoText,
-                            isSaving = uiState.isSavingMemo,
-                            isSaved = uiState.memoSaved,
-                            hasChanges = uiState.memoHasChanges,
-                            onMemoChanged = viewModel::onMemoChanged,
-                            onSave = viewModel::saveMemo
-                        )
+                        Box(modifier = Modifier.animateItemPlacement()) {
+                            MemoCard(
+                                memoText = uiState.memoText,
+                                isSaving = uiState.isSavingMemo,
+                                isSaved = uiState.memoSaved,
+                                hasChanges = uiState.memoHasChanges,
+                                onMemoChanged = viewModel::onMemoChanged,
+                                onSave = viewModel::saveMemo
+                            )
+                        }
                     }
 
                     // Color picker card
                     item {
-                        ColorPickerCard(
-                            selectedIndex = uiState.colorIndex,
-                            onColorSelected = viewModel::onColorSelected
-                        )
+                        Box(modifier = Modifier.animateItemPlacement()) {
+                            ColorPickerCard(
+                                selectedIndex = uiState.colorIndex,
+                                onColorSelected = viewModel::onColorSelected
+                            )
+                        }
                     }
 
                     item { Spacer(modifier = Modifier.height(16.dp)) }

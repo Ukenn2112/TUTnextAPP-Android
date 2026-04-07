@@ -2,6 +2,7 @@ package com.meikenn.tama.ui.feature.timetable
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.meikenn.tama.data.local.dao.CourseColorDao
 import com.meikenn.tama.data.repository.TimetableRepository
 import com.meikenn.tama.domain.model.Course
 import com.meikenn.tama.domain.model.Semester
@@ -64,7 +65,8 @@ data class PeriodInfo(
 
 @HiltViewModel
 class TimetableViewModel @Inject constructor(
-    private val timetableRepository: TimetableRepository
+    private val timetableRepository: TimetableRepository,
+    private val courseColorDao: CourseColorDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TimetableUiState())
@@ -72,6 +74,29 @@ class TimetableViewModel @Inject constructor(
 
     init {
         loadTimetable()
+        observeColorChanges()
+    }
+
+    private fun observeColorChanges() {
+        viewModelScope.launch {
+            courseColorDao.getAllAsFlow().collect { colors ->
+                val colorMap = colors.associate { it.jugyoCd to it.colorIndex }
+                val currentCourses = _uiState.value.courses
+                if (currentCourses.isEmpty()) return@collect
+
+                val updated = currentCourses.mapValues { (_, dayMap) ->
+                    dayMap.mapValues { (_, course) ->
+                        val newColor = course.jugyoCd?.let { colorMap[it] }
+                        if (newColor != null && newColor != course.colorIndex) {
+                            course.copy(colorIndex = newColor)
+                        } else course
+                    }
+                }
+                if (updated != currentCourses) {
+                    _uiState.value = _uiState.value.copy(courses = updated)
+                }
+            }
+        }
     }
 
     fun loadTimetable() {

@@ -93,7 +93,10 @@ fun TUTnextAPPTheme(
 
     val semanticColors = if (darkTheme) DarkSemanticColors else LightSemanticColors
 
-    CompositionLocalProvider(LocalSemanticColors provides semanticColors) {
+    CompositionLocalProvider(
+        LocalSemanticColors provides semanticColors,
+        LocalDarkTheme provides darkTheme
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,

@@ -31,9 +31,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -83,6 +86,7 @@ fun MainScaffold(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             TopAppBar(
                 title = {
@@ -98,11 +102,15 @@ fun MainScaffold(
                         fontWeight = FontWeight.Bold
                     )
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                ),
                 actions = {
                     Box(
                         modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(30.dp)
+                            .padding(end = 16.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
                             .clickable(onClickLabel = "設定を開く") { onSettingsClick() },
@@ -111,15 +119,19 @@ fun MainScaffold(
                         Text(
                             text = userInitials,
                             color = MaterialTheme.colorScheme.onPrimary,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
             )
         },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                tonalElevation = 0.dp
+            ) {
                 tabs.forEachIndexed { index, tab ->
                     if (index == 3) {
                         // "More" tab - shows dropdown instead of navigating
@@ -239,11 +251,21 @@ fun MainScaffold(
                                     }
                                 }
                             },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
                             icon = {
                                 if (index == 2 && assignmentBadgeCount > 0) {
                                     BadgedBox(
                                         badge = {
-                                            Badge { Text(assignmentBadgeCount.toString()) }
+                                            Badge(
+                                                containerColor = MaterialTheme.colorScheme.error,
+                                                contentColor = MaterialTheme.colorScheme.onError
+                                            ) { Text(assignmentBadgeCount.toString()) }
                                         }
                                     ) {
                                         Icon(tab.icon, contentDescription = tab.label)
@@ -252,7 +274,12 @@ fun MainScaffold(
                                     Icon(tab.icon, contentDescription = tab.label)
                                 }
                             },
-                            label = { Text(tab.label) }
+                            label = {
+                                Text(
+                                    tab.label,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
                         )
                     }
                 }

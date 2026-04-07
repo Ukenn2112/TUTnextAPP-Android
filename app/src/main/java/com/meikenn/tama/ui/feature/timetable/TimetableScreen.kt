@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.domain.model.Course
+import com.meikenn.tama.ui.component.shimmerEffect
 import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
 import com.meikenn.tama.ui.theme.CourseColors
 import java.util.Calendar
@@ -68,70 +73,62 @@ fun TimetableScreen(
     Box(modifier = Modifier.fillMaxSize().padding(scaffoldPadding)) {
         when {
             uiState.isLoading && uiState.courses.isEmpty() -> {
-                // Loading state
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "読み込み中...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                TimetableShimmer(modifier = Modifier.fillMaxSize())
             }
 
             uiState.error != null && uiState.courses.isEmpty() -> {
                 // Error state
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(300)) + slideInVertically(tween(300))
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = "エラー",
-                        modifier = Modifier.size(40.dp),
-                        tint = AppColors.semantic.warning
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "エラーが発生しました",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = uiState.error ?: "",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 32.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { viewModel.refresh() },
-                        shape = RoundedCornerShape(50),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "再読み込み",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp)
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = "エラー",
+                            modifier = Modifier.size(40.dp),
+                            tint = AppColors.semantic.warning
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "エラーが発生しました",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = uiState.error ?: "",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.refresh() },
+                            shape = RoundedCornerShape(50),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ),
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        ) {
+                            Text(
+                                text = "再読み込み",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -371,9 +368,9 @@ private fun TimeSlotCell(
     val borderColor = if (isCurrentDay && isCurrentPeriod) {
         AppColors.semantic.success
     } else {
-        MaterialTheme.colorScheme.outlineVariant
+        MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
     }
-    val borderWidth = if (isCurrentDay && isCurrentPeriod) 1.5.dp else 1.dp
+    val borderWidth = if (isCurrentDay && isCurrentPeriod) 1.5.dp else 0.5.dp
 
     Box(
         modifier = Modifier
@@ -439,6 +436,84 @@ private fun TimeSlotCell(
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+private fun TimetableShimmer(modifier: Modifier = Modifier) {
+    val weekdays = listOf("月", "火", "水", "木", "金")
+    val periods = listOf("1" to "9:00", "2" to "10:40", "3" to "13:00", "4" to "14:40", "5" to "16:20", "6" to "18:00")
+
+    BoxWithConstraints(
+        modifier = modifier
+            .padding(start = LEFT_PADDING, end = RIGHT_PADDING, top = 8.dp, bottom = 8.dp)
+    ) {
+        val columns = weekdays.size
+        val rows = periods.size
+        val cellWidth = (maxWidth - TIME_COLUMN_WIDTH - GRID_SPACING * (columns - 1)) / columns
+        val cellHeight = (maxHeight - HEADER_AREA_HEIGHT - GRID_SPACING * (rows - 1)) / rows
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Weekday header — real text, not shimmer
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(GRID_SPACING),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.width(TIME_COLUMN_WIDTH))
+                weekdays.forEach { day ->
+                    Box(
+                        modifier = Modifier.width(cellWidth),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = day,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(HEADER_BOTTOM_SPACING))
+
+            // Grid with time column + shimmer cells
+            Column(verticalArrangement = Arrangement.spacedBy(GRID_SPACING)) {
+                periods.forEach { (number, startTime) ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(GRID_SPACING)) {
+                        // Time column — real layout, dimmed
+                        Column(
+                            modifier = Modifier
+                                .width(TIME_COLUMN_WIDTH)
+                                .height(cellHeight),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = startTime,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                            )
+                            Text(
+                                text = number,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                            )
+                        }
+                        // Shimmer cells
+                        repeat(columns) {
+                            Box(
+                                modifier = Modifier
+                                    .width(cellWidth)
+                                    .height(cellHeight)
+                                    .clip(MaterialTheme.shapes.small)
+                                    .shimmerEffect()
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
