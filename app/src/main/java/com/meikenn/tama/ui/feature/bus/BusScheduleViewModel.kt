@@ -24,7 +24,8 @@ data class BusScheduleUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val currentHour: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
-    val currentMinute: Int = Calendar.getInstance().get(Calendar.MINUTE)
+    val currentMinute: Int = Calendar.getInstance().get(Calendar.MINUTE),
+    val currentSecond: Int = Calendar.getInstance().get(Calendar.SECOND)
 )
 
 @HiltViewModel
@@ -153,12 +154,13 @@ class BusScheduleViewModel @Inject constructor(
     private fun startTimerUpdate() {
         timerJob = viewModelScope.launch {
             while (isActive) {
-                delay(60_000L) // Update every minute
+                delay(1_000L) // Update every second
                 val calendar = Calendar.getInstance()
                 _uiState.update {
                     it.copy(
                         currentHour = calendar.get(Calendar.HOUR_OF_DAY),
-                        currentMinute = calendar.get(Calendar.MINUTE)
+                        currentMinute = calendar.get(Calendar.MINUTE),
+                        currentSecond = calendar.get(Calendar.SECOND)
                     )
                 }
             }

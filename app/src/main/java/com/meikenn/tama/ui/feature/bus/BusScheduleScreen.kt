@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,10 +34,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.domain.model.*
 import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
+import com.meikenn.tama.ui.theme.AppPrimary
+import com.meikenn.tama.ui.theme.CurrentHourBgDark
+import com.meikenn.tama.ui.theme.CurrentHourBgLight
 
-// Colors matching iOS appPrimary and other constants
-private val AppPrimary = Color(0xFF6650A4)
+// iOS-matched colors
 private val OrangeAccent = Color(0xFFFF9800)
+private val GreenAccent = Color(0xFF34C759) // iOS system green
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +97,6 @@ private fun BusScheduleContent(
             ?.filter { it.times.isNotEmpty() } ?: return@LaunchedEffect
         val index = visibleSchedules.indexOfFirst { it.hour == targetHour }
         if (index >= 0) {
-            // Header items: messages (0 or 1) + schedule type (1) + route (1) + time card (1) + table header (1)
             val headerOffset = (if (schedule.temporaryMessages.isNotEmpty()) 1 else 0) + 4
             listState.animateScrollToItem(index + headerOffset)
         }
@@ -104,14 +107,14 @@ private fun BusScheduleContent(
         contentPadding = scaffoldPadding,
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
-        // 1. Temporary messages (horizontal scroll cards)
+        // 1. Temporary messages
         if (schedule.temporaryMessages.isNotEmpty()) {
             item(key = "messages") {
                 TemporaryMessagesRow(messages = schedule.temporaryMessages)
             }
         }
 
-        // 2. Schedule type selector (segmented)
+        // 2. Schedule type selector
         item(key = "scheduleType") {
             ScheduleTypeSelector(
                 selected = uiState.selectedScheduleType,
@@ -119,7 +122,7 @@ private fun BusScheduleContent(
             )
         }
 
-        // 3. Route selector (pill buttons)
+        // 3. Route selector
         item(key = "routeSelector") {
             RouteSelector(
                 selected = uiState.selectedRoute,
@@ -237,8 +240,8 @@ private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
                         Icon(
                             imageVector = Icons.Filled.ChevronRight,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            modifier = Modifier.size(9.dp),
+                            tint = Color.Gray
                         )
                     }
                 }
@@ -268,7 +271,8 @@ private fun ScheduleTypeSelector(
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = types.size),
                 onClick = { onSelect(type) },
-                selected = selected == type
+                selected = selected == type,
+                icon = {} // No checkmark icon
             ) {
                 Text(
                     text = type.displayName,
@@ -289,34 +293,22 @@ private fun RouteSelector(
     selected: RouteType,
     onSelect: (RouteType) -> Unit
 ) {
-    val stationRoutes = listOf(RouteType.FROM_SEISEKI_TO_SCHOOL, RouteType.FROM_NAGAYAMA_TO_SCHOOL)
-    val schoolRoutes = listOf(RouteType.FROM_SCHOOL_TO_SEISEKI, RouteType.FROM_SCHOOL_TO_NAGAYAMA)
+    val allRoutes = listOf(
+        RouteType.FROM_SEISEKI_TO_SCHOOL,
+        RouteType.FROM_NAGAYAMA_TO_SCHOOL,
+        RouteType.FROM_SCHOOL_TO_SEISEKI,
+        RouteType.FROM_SCHOOL_TO_NAGAYAMA
+    )
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = 16.dp, vertical = 5.dp),
+        horizontalArrangement = Arrangement.spacedBy(15.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        stationRoutes.forEach { route ->
-            RouteChip(
-                label = route.displayName,
-                isSelected = selected == route,
-                onClick = { onSelect(route) }
-            )
-        }
-
-        // Divider between route pairs
-        Box(
-            modifier = Modifier
-                .height(20.dp)
-                .width(1.dp)
-                .background(Color.Gray.copy(alpha = 0.3f))
-        )
-
-        schoolRoutes.forEach { route ->
+        allRoutes.forEach { route ->
             RouteChip(
                 label = route.displayName,
                 isSelected = selected == route,
@@ -332,16 +324,8 @@ private fun RouteChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val containerColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest
-    }
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
+    val containerColor = if (isSelected) AppPrimary else MaterialTheme.colorScheme.surfaceContainerHighest
+    val contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
 
     Surface(
         onClick = onClick,
@@ -373,8 +357,6 @@ private fun TimeInfoCard(
     pinMessage: PinMessage?
 ) {
     val context = LocalContext.current
-
-    // Determine effective target bus (selected or next)
     val targetBus = selectedEntry ?: nextBus
     val isSelectedMode = selectedEntry != null
 
@@ -385,8 +367,8 @@ private fun TimeInfoCard(
             .shadow(
                 elevation = 3.dp,
                 shape = RoundedCornerShape(12.dp),
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                ambientColor = AppPrimary.copy(alpha = 0.15f),
+                spotColor = AppPrimary.copy(alpha = 0.15f)
             )
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
@@ -421,13 +403,18 @@ private fun TimeInfoCard(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        val diffMinutes = (targetBus.hour - uiState.currentHour) * 60 +
-                            (targetBus.minute - uiState.currentMinute)
-                        val countdownColor = if (isSelectedMode) OrangeAccent else Color(0xFF4CAF50)
-                        if (diffMinutes >= 0) {
-                            val hours = diffMinutes / 60
-                            val mins = diffMinutes % 60
-                            val countdownText = if (hours > 0) "${hours}時間${mins}分" else "${mins}分"
+                        val diffTotalSeconds = (targetBus.hour - uiState.currentHour) * 3600 +
+                            (targetBus.minute - uiState.currentMinute) * 60 -
+                            uiState.currentSecond
+                        val countdownColor = if (isSelectedMode) OrangeAccent else GreenAccent
+                        if (diffTotalSeconds > 0) {
+                            val hours = diffTotalSeconds / 3600
+                            val mins = (diffTotalSeconds % 3600) / 60
+                            val secs = diffTotalSeconds % 60
+                            val countdownText = when {
+                                hours > 0 -> "${hours}時間${mins}分${secs}秒"
+                                else -> "${mins}分${secs}秒"
+                            }
                             Text(
                                 text = countdownText,
                                 style = MaterialTheme.typography.headlineSmall.copy(
@@ -435,6 +422,15 @@ private fun TimeInfoCard(
                                     fontWeight = FontWeight.Bold
                                 ),
                                 color = countdownColor
+                            )
+                        } else if (diffTotalSeconds == 0) {
+                            Text(
+                                text = "バスの出発時刻です",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = OrangeAccent
                             )
                         } else {
                             Text(
@@ -460,7 +456,7 @@ private fun TimeInfoCard(
 
             // Pin message
             if (pinMessage != null) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -484,7 +480,7 @@ private fun TimeInfoCard(
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
                             text = "\uD83D\uDCCC",
@@ -500,11 +496,26 @@ private fun TimeInfoCard(
                             maxLines = 2
                         )
                         if (pinMessage.url != null) {
-                            Text(
-                                text = "詳細",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = OrangeAccent
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(7.dp))
+                                    .background(Color.White.copy(alpha = 0.22f))
+                                    .border(
+                                        width = 0.5.dp,
+                                        color = OrangeAccent.copy(alpha = 0.35f),
+                                        shape = RoundedCornerShape(7.dp)
+                                    )
+                                    .padding(horizontal = 9.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    text = "詳細",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = OrangeAccent
+                                )
+                            }
                         }
                     }
                 }
@@ -526,21 +537,21 @@ private fun TimeTableHeader() {
             .padding(top = 8.dp)
             .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(12.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "時間",
             modifier = Modifier.width(70.dp),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = "発車時刻",
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -559,8 +570,9 @@ private fun HourScheduleRow(
     onEntryClick: (TimeEntry) -> Unit,
     rowIndex: Int
 ) {
+    val currentHourBg = if (isSystemInDarkTheme()) CurrentHourBgDark else CurrentHourBgLight
     val backgroundColor = when {
-        isCurrentHour -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        isCurrentHour -> currentHourBg
         rowIndex % 2 == 0 -> MaterialTheme.colorScheme.surface
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
@@ -573,9 +585,9 @@ private fun HourScheduleRow(
                 .fillMaxWidth()
                 .background(backgroundColor)
                 .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Hour column - 70dp width, centered
+            // Hour column
             Text(
                 text = "${hourSchedule.hour}",
                 modifier = Modifier.width(70.dp),
@@ -599,7 +611,6 @@ private fun HourScheduleRow(
             )
         }
 
-        // Divider between hours
         HorizontalDivider(
             thickness = 1.dp,
             color = Color.Gray.copy(alpha = 0.3f)
@@ -615,7 +626,6 @@ private fun MinutesGrid(
     onEntryClick: (TimeEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // LazyVGrid-like: 5 columns, item width ~50dp, spacing 8h 12v
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -633,7 +643,6 @@ private fun MinutesGrid(
                         onClick = { onEntryClick(time) }
                     )
                 }
-                // Fill remaining slots for alignment
                 repeat(5 - rowTimes.size) {
                     Spacer(modifier = Modifier.size(width = 50.dp, height = 36.dp))
                 }
@@ -655,12 +664,11 @@ private fun TimeEntryChip(
     ) {
         val backgroundColor = when {
             isSelected -> OrangeAccent.copy(alpha = 0.9f)
-            isHighlighted -> MaterialTheme.colorScheme.primary
+            isHighlighted -> AppPrimary
             else -> Color.Transparent
         }
         val textColor = when {
-            isSelected -> Color.White
-            isHighlighted -> MaterialTheme.colorScheme.onPrimary
+            isSelected || isHighlighted -> Color.White
             else -> MaterialTheme.colorScheme.onSurface
         }
 
@@ -724,8 +732,8 @@ private fun SpecialNotesSection(
             .shadow(
                 elevation = 3.dp,
                 shape = RoundedCornerShape(12.dp),
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                ambientColor = AppPrimary.copy(alpha = 0.12f),
+                spotColor = AppPrimary.copy(alpha = 0.12f)
             )
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
@@ -756,7 +764,7 @@ private fun SpecialNotesSection(
                         Text(
                             text = note.symbol,
                             style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             ),
                             color = Color.White
