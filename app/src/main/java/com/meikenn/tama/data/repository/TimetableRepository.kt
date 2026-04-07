@@ -162,7 +162,7 @@ class TimetableRepository @Inject constructor(
             return Result.failure(Exception(errorMsg))
         }
 
-        val data = response.data
+        val data = response.dataObject
             ?: return Result.failure(Exception("レスポンスデータがありません"))
 
         // Extract and save semester info

@@ -46,7 +46,7 @@ class AuthRepository @Inject constructor(
                 return Result.failure(Exception(errorMsg))
             }
 
-            val data = response.data ?: return Result.failure(Exception("レスポンスデータがありません"))
+            val data = response.dataObject ?: return Result.failure(Exception("レスポンスデータがありません"))
             val user = createUserFromResponse(account, data)
                 ?: return Result.failure(Exception("ユーザー情報の解析に失敗しました"))
 

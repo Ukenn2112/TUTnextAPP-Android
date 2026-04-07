@@ -8,6 +8,8 @@ import com.meikenn.tama.data.remote.ApiService
 import com.meikenn.tama.domain.model.Announcement
 import com.meikenn.tama.domain.model.Attendance
 import com.meikenn.tama.domain.model.CourseDetail
+import java.net.URLDecoder
+import java.net.URLEncoder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -57,7 +59,7 @@ class CourseDetailRepository @Inject constructor(
                 return Result.failure(Exception(errorMsg))
             }
 
-            val data = response.data
+            val data = response.dataObject
                 ?: return Result.failure(Exception("レスポンスデータがありません"))
 
             val courseDetail = parseCourseDetail(data)
@@ -73,10 +75,11 @@ class CourseDetailRepository @Inject constructor(
             val user = secureStorage.getUser()
                 ?: return Result.failure(Exception("ユーザー認証情報がありません"))
 
+            val encodedMemo = URLEncoder.encode(memo, "UTF-8")
             val requestData = JsonObject().apply {
                 addProperty("jugyoCd", jugyoCd)
                 addProperty("nendo", nendo)
-                addProperty("jugyoMemo", memo)
+                addProperty("jugyoMemo", encodedMemo)
             }
 
             val body = ApiRequestBody(
@@ -132,9 +135,14 @@ class CourseDetailRepository @Inject constructor(
             Attendance()
         }
 
-        val memo = data.get("jugyoMemo")?.let {
+        val rawMemo = data.get("jugyoMemo")?.let {
             if (it.isJsonNull) "" else it.asString
         } ?: ""
+        val memo = try {
+            URLDecoder.decode(rawMemo, "UTF-8")
+        } catch (_: Exception) {
+            rawMemo
+        }
 
         val syllabusPubFlg = data.get("syllabusPubFlg")?.asBoolean ?: false
         val syuKetuKanriFlg = data.get("syuKetuKanriFlg")?.asBoolean ?: false
