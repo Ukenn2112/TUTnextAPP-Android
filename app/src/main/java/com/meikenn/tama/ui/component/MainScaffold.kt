@@ -65,6 +65,9 @@ fun MainScaffold(
     navController: NavHostController,
     userInitials: String,
     assignmentBadgeCount: Int = 0,
+    onSettingsClick: () -> Unit = {},
+    onTeacherEmailClick: () -> Unit = {},
+    onPrintSystemClick: () -> Unit = {},
     content: @Composable (Modifier) -> Unit
 ) {
     val context = LocalContext.current
@@ -98,9 +101,7 @@ fun MainScaffold(
                             .size(30.dp)
                             .clip(CircleShape)
                             .background(Color(0xFFD32F2F))
-                            .clickable {
-                                navController.navigate(Route.SETTINGS)
-                            },
+                            .clickable { onSettingsClick() },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -185,7 +186,7 @@ fun MainScaffold(
                                             },
                                             onClick = {
                                                 showMoreMenu = false
-                                                navController.navigate(Route.TEACHER_EMAIL)
+                                                onTeacherEmailClick()
                                             }
                                         )
                                         DropdownMenuItem(
@@ -199,7 +200,7 @@ fun MainScaffold(
                                             },
                                             onClick = {
                                                 showMoreMenu = false
-                                                navController.navigate(Route.PRINT_SYSTEM)
+                                                onPrintSystemClick()
                                             }
                                         )
                                         HorizontalDivider()
@@ -214,7 +215,7 @@ fun MainScaffold(
                                             },
                                             onClick = {
                                                 showMoreMenu = false
-                                                navController.navigate(Route.SETTINGS)
+                                                onSettingsClick()
                                             }
                                         )
                                     }

@@ -1,16 +1,28 @@
 package com.meikenn.tama.ui.navigation
 
 import android.net.Uri
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import com.meikenn.tama.domain.model.Course
 import com.meikenn.tama.ui.component.MainScaffold
 import com.meikenn.tama.ui.feature.assignment.AssignmentScreen
 import com.meikenn.tama.ui.feature.bus.BusScheduleScreen
@@ -22,7 +34,13 @@ import com.meikenn.tama.ui.feature.settings.DarkModeSettingsScreen
 import com.meikenn.tama.ui.feature.settings.SettingsScreen
 import com.meikenn.tama.ui.feature.teacher.TeacherEmailListScreen
 import com.meikenn.tama.ui.feature.timetable.TimetableScreen
+import kotlinx.coroutines.launch
 
+enum class SheetContent {
+    NONE, SETTINGS, DARK_MODE, TEACHER_EMAIL, PRINT_SYSTEM, COURSE_DETAIL
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(
     viewModel: AppNavigationViewModel = hiltViewModel()
@@ -30,96 +48,143 @@ fun AppNavigation(
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle()
     val userInitials by viewModel.userInitials.collectAsStateWithLifecycle()
 
-    val navController = rememberNavController()
-
     if (!isLoggedIn) {
         LoginScreen(onLoginSuccess = { viewModel.refreshLoginState() })
-    } else {
-        MainScaffold(
+        return
+    }
+
+    val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
+
+    // Sheet state
+    var currentSheet by remember { mutableStateOf(SheetContent.NONE) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Course detail params (stored when tapping a course)
+    var selectedCourse by remember { mutableStateOf<Course?>(null) }
+
+    // Dark mode sub-sheet
+    var showDarkModeSheet by remember { mutableStateOf(false) }
+    val darkModeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    fun showSheet(sheet: SheetContent) {
+        currentSheet = sheet
+    }
+
+    fun hideSheet() {
+        scope.launch {
+            sheetState.hide()
+            currentSheet = SheetContent.NONE
+        }
+    }
+
+    MainScaffold(
+        navController = navController,
+        userInitials = userInitials,
+        onSettingsClick = { showSheet(SheetContent.SETTINGS) },
+        onTeacherEmailClick = { showSheet(SheetContent.TEACHER_EMAIL) },
+        onPrintSystemClick = { showSheet(SheetContent.PRINT_SYSTEM) }
+    ) { modifier ->
+        NavHost(
             navController = navController,
-            userInitials = userInitials
-        ) { modifier ->
-            NavHost(
-                navController = navController,
-                startDestination = Route.TIMETABLE,
-                modifier = modifier
-            ) {
-                composable(Route.BUS) {
-                    BusScheduleScreen()
-                }
-                composable(Route.TIMETABLE) {
-                    TimetableScreen(
-                        onCourseClick = { course ->
-                            val encodedName = Uri.encode(course.name)
-                            val encodedTeacher = Uri.encode(course.teacher)
-                            val encodedRoom = Uri.encode(course.room)
-                            val route = "courseDetail/${course.jugyoCd ?: ""}/${course.academicYear ?: 0}/${course.courseYear ?: 0}/${course.courseTerm ?: 0}/${Uri.encode(course.jugyoKbn ?: "")}/${course.weekday ?: 0}/${course.period ?: 0}?name=$encodedName&teacher=$encodedTeacher&room=$encodedRoom"
-                            navController.navigate(route)
+            startDestination = Route.TIMETABLE,
+            modifier = modifier
+        ) {
+            composable(Route.BUS) {
+                BusScheduleScreen()
+            }
+            composable(Route.TIMETABLE) {
+                TimetableScreen(
+                    onCourseClick = { course ->
+                        selectedCourse = course
+                        showSheet(SheetContent.COURSE_DETAIL)
+                    }
+                )
+            }
+            composable(Route.ASSIGNMENT) {
+                AssignmentScreen()
+            }
+        }
+    }
+
+    // Bottom sheet for Settings, Teacher, Print, CourseDetail
+    if (currentSheet != SheetContent.NONE) {
+        ModalBottomSheet(
+            onDismissRequest = { currentSheet = SheetContent.NONE },
+            sheetState = sheetState,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+            dragHandle = null,
+            windowInsets = WindowInsets.statusBars,
+            modifier = Modifier.fillMaxHeight(0.93f)
+        ) {
+            when (currentSheet) {
+                SheetContent.SETTINGS -> {
+                    SettingsScreen(
+                        onNavigateBack = { hideSheet() },
+                        onNavigateToDarkMode = { showDarkModeSheet = true },
+                        onLogout = {
+                            hideSheet()
+                            viewModel.refreshLoginState()
                         }
                     )
                 }
-                composable(
-                    route = "courseDetail/{jugyoCd}/{nendo}/{kaikoNendo}/{gakkiNo}/{jugyoKbn}/{kaikoYobi}/{jigenNo}?name={name}&teacher={teacher}&room={room}",
-                    arguments = listOf(
-                        navArgument("jugyoCd") { type = NavType.StringType },
-                        navArgument("nendo") { type = NavType.IntType },
-                        navArgument("kaikoNendo") { type = NavType.IntType },
-                        navArgument("gakkiNo") { type = NavType.IntType },
-                        navArgument("jugyoKbn") { type = NavType.StringType },
-                        navArgument("kaikoYobi") { type = NavType.IntType },
-                        navArgument("jigenNo") { type = NavType.IntType },
-                        navArgument("name") { type = NavType.StringType; defaultValue = "" },
-                        navArgument("teacher") { type = NavType.StringType; defaultValue = "" },
-                        navArgument("room") { type = NavType.StringType; defaultValue = "" }
+                SheetContent.TEACHER_EMAIL -> {
+                    TeacherEmailListScreen(
+                        onNavigateBack = { hideSheet() }
                     )
-                ) { backStackEntry ->
-                    val detailViewModel: CourseDetailViewModel = hiltViewModel()
-                    val args = backStackEntry.arguments ?: return@composable
-                    LaunchedEffect(Unit) {
-                        detailViewModel.loadCourseDetail(
-                            courseName = args.getString("name") ?: "",
-                            jugyoCd = args.getString("jugyoCd") ?: "",
-                            nendo = args.getInt("nendo"),
-                            kaikoNendo = args.getInt("kaikoNendo"),
-                            gakkiNo = args.getInt("gakkiNo"),
-                            jugyoKbn = args.getString("jugyoKbn") ?: "",
-                            kaikoYobi = args.getInt("kaikoYobi"),
-                            jigenNo = args.getInt("jigenNo"),
-                            teacherName = args.getString("teacher") ?: "",
-                            roomName = args.getString("room") ?: ""
+                }
+                SheetContent.PRINT_SYSTEM -> {
+                    PrintSystemScreen(
+                        onNavigateBack = { hideSheet() }
+                    )
+                }
+                SheetContent.COURSE_DETAIL -> {
+                    val course = selectedCourse
+                    if (course != null) {
+                        val detailViewModel: CourseDetailViewModel = hiltViewModel()
+                        LaunchedEffect(course) {
+                            detailViewModel.loadCourseDetail(
+                                courseName = course.name,
+                                jugyoCd = course.jugyoCd ?: "",
+                                nendo = course.academicYear ?: 0,
+                                kaikoNendo = course.courseYear ?: 0,
+                                gakkiNo = course.courseTerm ?: 0,
+                                jugyoKbn = course.jugyoKbn ?: "",
+                                kaikoYobi = course.weekday ?: 0,
+                                jigenNo = course.period ?: 0,
+                                teacherName = course.teacher,
+                                roomName = course.room
+                            )
+                        }
+                        CourseDetailScreen(
+                            onNavigateBack = { hideSheet() },
+                            viewModel = detailViewModel
                         )
                     }
-                    CourseDetailScreen(
-                        onNavigateBack = { navController.popBackStack() },
-                        viewModel = detailViewModel
-                    )
                 }
-                composable(Route.ASSIGNMENT) {
-                    AssignmentScreen()
-                }
-                composable(Route.SETTINGS) {
-                    SettingsScreen(
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToDarkMode = { navController.navigate(Route.DARK_MODE_SETTINGS) },
-                        onLogout = { viewModel.refreshLoginState() }
-                    )
-                }
-                composable(Route.DARK_MODE_SETTINGS) {
-                    DarkModeSettingsScreen(
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-                composable(Route.TEACHER_EMAIL) {
-                    TeacherEmailListScreen(
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-                composable(Route.PRINT_SYSTEM) {
-                    PrintSystemScreen(
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
+                else -> {}
             }
+        }
+    }
+
+    // Dark mode sub-sheet (on top of settings)
+    if (showDarkModeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showDarkModeSheet = false },
+            sheetState = darkModeSheetState,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+            dragHandle = null,
+            windowInsets = WindowInsets.statusBars,
+            modifier = Modifier.fillMaxHeight(0.6f)
+        ) {
+            DarkModeSettingsScreen(
+                onNavigateBack = {
+                    scope.launch {
+                        darkModeSheetState.hide()
+                        showDarkModeSheet = false
+                    }
+                }
+            )
         }
     }
 }
