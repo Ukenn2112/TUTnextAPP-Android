@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -49,6 +50,7 @@ fun AssignmentScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val scaffoldPadding = LocalScaffoldPadding.current
 
     // Read timeTick so recomposition happens on timer tick
     @Suppress("UNUSED_VARIABLE")
@@ -60,6 +62,7 @@ fun AssignmentScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .padding(scaffoldPadding)
             .background(backgroundColor)
     ) {
         when {

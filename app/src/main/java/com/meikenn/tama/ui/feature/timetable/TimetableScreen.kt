@@ -37,11 +37,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.domain.model.Course
+import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
 import com.meikenn.tama.ui.theme.CourseColors
 import java.util.Calendar
 
@@ -61,8 +63,9 @@ fun TimetableScreen(
     viewModel: TimetableViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scaffoldPadding = LocalScaffoldPadding.current
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().padding(scaffoldPadding)) {
         when {
             uiState.isLoading && uiState.courses.isEmpty() -> {
                 // Loading state
@@ -200,10 +203,11 @@ private fun TimetableGrid(
 
     BoxWithConstraints(
         modifier = modifier
-            .padding(start = LEFT_PADDING, end = RIGHT_PADDING, top = 8.dp)
+            .padding(start = LEFT_PADDING, end = RIGHT_PADDING, top = 8.dp, bottom = 8.dp)
     ) {
         val availableWidth = maxWidth
         val availableHeight = maxHeight
+
 
         // Calculate cell dimensions like iOS LayoutMetrics
         val columnCount = weekdays.size.coerceAtLeast(1)
@@ -292,14 +296,16 @@ private fun WeekdayHeader(
                     // Current day: green circle badge
                     Box(
                         modifier = Modifier
-                            .size(20.dp)
+                            .size(24.dp)
                             .background(Color(0xFF4CAF50), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = dayName,
-                            fontSize = 14.sp,
-                            color = Color.White
+                            fontSize = 13.sp,
+                            color = Color.White,
+                            lineHeight = 13.sp,
+                            textAlign = TextAlign.Center
                         )
                     }
                 } else {

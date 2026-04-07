@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.domain.model.*
+import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
 
 // Colors matching iOS appPrimary and other constants
 private val AppPrimary = Color(0xFF6650A4)
@@ -43,11 +44,12 @@ fun BusScheduleScreen(
     viewModel: BusScheduleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scaffoldPadding = LocalScaffoldPadding.current
 
     when {
         uiState.isLoading && uiState.schedule == null -> {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().padding(scaffoldPadding),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -57,13 +59,14 @@ fun BusScheduleScreen(
             ErrorContent(
                 message = uiState.error!!,
                 onRetry = { viewModel.fetchBusSchedule() },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().padding(scaffoldPadding)
             )
         }
         uiState.schedule != null -> {
             BusScheduleContent(
                 uiState = uiState,
                 viewModel = viewModel,
+                scaffoldPadding = scaffoldPadding,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -75,6 +78,7 @@ fun BusScheduleScreen(
 private fun BusScheduleContent(
     uiState: BusScheduleUiState,
     viewModel: BusScheduleViewModel,
+    scaffoldPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier
 ) {
     val schedule = uiState.schedule ?: return
@@ -97,6 +101,7 @@ private fun BusScheduleContent(
 
     LazyColumn(
         state = listState,
+        contentPadding = scaffoldPadding,
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         // 1. Temporary messages (horizontal scroll cards)
@@ -167,7 +172,7 @@ private fun BusScheduleContent(
         }
 
         // Bottom spacer
-        item { Spacer(modifier = Modifier.height(32.dp)) }
+        item { Spacer(modifier = Modifier.height(16.dp)) }
     }
 }
 

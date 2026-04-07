@@ -1,6 +1,7 @@
 package com.meikenn.tama.ui.navigation
 
 import android.net.Uri
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.statusBars
@@ -13,8 +14,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +38,8 @@ import com.meikenn.tama.ui.feature.settings.SettingsScreen
 import com.meikenn.tama.ui.feature.teacher.TeacherEmailListScreen
 import com.meikenn.tama.ui.feature.timetable.TimetableScreen
 import kotlinx.coroutines.launch
+
+val LocalScaffoldPadding = compositionLocalOf { PaddingValues() }
 
 enum class SheetContent {
     NONE, SETTINGS, DARK_MODE, TEACHER_EMAIL, PRINT_SYSTEM, COURSE_DETAIL
@@ -84,25 +89,26 @@ fun AppNavigation(
         onSettingsClick = { showSheet(SheetContent.SETTINGS) },
         onTeacherEmailClick = { showSheet(SheetContent.TEACHER_EMAIL) },
         onPrintSystemClick = { showSheet(SheetContent.PRINT_SYSTEM) }
-    ) { modifier ->
-        NavHost(
-            navController = navController,
-            startDestination = Route.TIMETABLE,
-            modifier = modifier
-        ) {
-            composable(Route.BUS) {
-                BusScheduleScreen()
-            }
-            composable(Route.TIMETABLE) {
-                TimetableScreen(
-                    onCourseClick = { course ->
-                        selectedCourse = course
-                        showSheet(SheetContent.COURSE_DETAIL)
-                    }
-                )
-            }
-            composable(Route.ASSIGNMENT) {
-                AssignmentScreen()
+    ) { paddingValues ->
+        CompositionLocalProvider(LocalScaffoldPadding provides paddingValues) {
+            NavHost(
+                navController = navController,
+                startDestination = Route.TIMETABLE
+            ) {
+                composable(Route.BUS) {
+                    BusScheduleScreen()
+                }
+                composable(Route.TIMETABLE) {
+                    TimetableScreen(
+                        onCourseClick = { course ->
+                            selectedCourse = course
+                            showSheet(SheetContent.COURSE_DETAIL)
+                        }
+                    )
+                }
+                composable(Route.ASSIGNMENT) {
+                    AssignmentScreen()
+                }
             }
         }
     }

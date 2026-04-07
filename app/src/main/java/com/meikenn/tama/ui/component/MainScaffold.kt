@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.meikenn.tama.ui.navigation.Route
+import androidx.compose.foundation.layout.PaddingValues
 
 private data class BottomTab(
     val label: String,
@@ -68,7 +69,7 @@ fun MainScaffold(
     onSettingsClick: () -> Unit = {},
     onTeacherEmailClick: () -> Unit = {},
     onPrintSystemClick: () -> Unit = {},
-    content: @Composable (Modifier) -> Unit
+    content: @Composable (PaddingValues) -> Unit
 ) {
     val context = LocalContext.current
     var selectedTab by rememberSaveable { mutableIntStateOf(1) } // Default to Timetable
@@ -87,10 +88,16 @@ fun MainScaffold(
         topBar = {
             TopAppBar(
                 title = {
+                    val title = when (selectedTab) {
+                        0 -> "バス時刻表"
+                        1 -> "時間割"
+                        2 -> "課題"
+                        else -> "TUTnext"
+                    }
                     Text(
-                        text = "TUTnext",
+                        text = title,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontSize = 22.sp
                     )
                 },
                 actions = {
@@ -255,6 +262,6 @@ fun MainScaffold(
             }
         }
     ) { innerPadding ->
-        content(Modifier.padding(innerPadding))
+        content(innerPadding)
     }
 }
