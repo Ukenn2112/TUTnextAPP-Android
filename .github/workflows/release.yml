@@ -55,9 +55,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Prepare keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release-keystore.jks
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > release-keystore.jks
           else
             keytool -genkeypair -v \
               -keystore release-keystore.jks \
@@ -72,7 +74,16 @@ jobs:
           fi
 
       - name: Build Release APK & AAB
-        run: ./gradlew assembleRelease bundleRelease
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ARGS=""
+          [ -n "$KEYSTORE_PASSWORD" ] && ARGS="$ARGS -PRELEASE_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+          [ -n "$KEY_ALIAS" ] && ARGS="$ARGS -PRELEASE_KEY_ALIAS=$KEY_ALIAS"
+          [ -n "$KEY_PASSWORD" ] && ARGS="$ARGS -PRELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+          ./gradlew assembleRelease bundleRelease $ARGS
 
       - name: Rename artifacts
         run: |
