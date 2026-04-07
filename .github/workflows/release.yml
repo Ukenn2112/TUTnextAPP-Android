@@ -54,8 +54,43 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release-keystore.jks
+      - name: Decode or generate keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          STORE_PASS="${KEYSTORE_PASSWORD:-tutnext123}"
+          KEY_PASS="${KEY_PASSWORD:-$STORE_PASS}"
+          ALIAS="${KEY_ALIAS:-tutnext}"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > release-keystore-raw.jks
+            # Convert to legacy PKCS12 format to fix "Tag number over 30 is not supported"
+            # which occurs when the keystore was created with Java 9+ using modern algorithms
+            keytool -importkeystore \
+              -srckeystore release-keystore-raw.jks \
+              -destkeystore release-keystore.jks \
+              -deststoretype PKCS12 \
+              -srcstorepass "$STORE_PASS" \
+              -deststorepass "$STORE_PASS" \
+              -noprompt \
+              -J-Dkeystore.pkcs12.legacy 2>/dev/null \
+              || { echo "Warning: Legacy conversion failed, using raw keystore"; cp release-keystore-raw.jks release-keystore.jks; }
+          else
+            # No keystore secret provided; generate a self-signed JKS keystore
+            # using the default credentials defined in app/build.gradle.kts
+            keytool -genkey -v \
+              -keystore release-keystore.jks \
+              -alias "$ALIAS" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass "$STORE_PASS" \
+              -keypass "$KEY_PASS" \
+              -dname "CN=TUTnext, OU=Dev, O=TUTnext, L=Tokyo, S=Tokyo, C=JP" \
+              -storetype JKS
+          fi
 
       - name: Build Release APK & AAB
         env:
