@@ -25,9 +25,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = rootProject.file("release-keystore.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "tutnext123"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "tutnext"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "tutnext123"
+            storePassword = System.getenv("KEYSTORE_PASSWORD").takeUnless { it.isNullOrEmpty() } ?: "tutnext123"
+            keyAlias = System.getenv("KEY_ALIAS").takeUnless { it.isNullOrEmpty() } ?: "tutnext"
+            keyPassword = System.getenv("KEY_PASSWORD").takeUnless { it.isNullOrEmpty() } ?: "tutnext123"
         }
     }
 
