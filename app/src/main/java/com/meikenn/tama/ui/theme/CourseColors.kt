@@ -1,23 +1,50 @@
 package com.meikenn.tama.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 object CourseColors {
-    val presets = listOf(
-        Color.White,           // 0
-        Color(0xFFFFCDD2),     // 1 - pink
-        Color(0xFFFFE0B2),     // 2 - orange
-        Color(0xFFFFF9C4),     // 3 - yellow
-        Color(0xFFC8E6C9),     // 4 - light green
-        Color(0xFFA5D6A7),     // 5 - green
-        Color(0xFFB2EBF2),     // 6 - cyan
-        Color(0xFFF8BBD0),     // 7 - pink purple
-        Color(0xFFE1BEE7),     // 8 - purple
-        Color(0xFFBBDEFB),     // 9 - blue
-        Color(0xFFF48FB1)      // 10 - magenta
+    // iOS exact colors - Light mode
+    private val presetsLight = listOf(
+        Color.White,                // 0 - white
+        Color(0xFFFADBD3),         // 1 - CoursePink
+        Color(0xFFFAEBDB),         // 2 - CourseOrange
+        Color(0xFFFAFADB),         // 3 - CourseYellow
+        Color(0xFFEBFADB),         // 4 - CourseLightGreen
+        Color(0xFFDBFADB),         // 5 - CourseGreen
+        Color(0xFFDBFAFA),         // 6 - CourseCyan
+        Color(0xFFFAEBEB),         // 7 - CoursePinkPurple
+        Color(0xFFEBDBFA),         // 8 - CoursePurple
+        Color(0xFFDBEBFA),         // 9 - CourseBlue
+        Color(0xFFFADBFA)          // 10 - CourseMagenta
     )
 
+    // iOS exact colors - Dark mode
+    private val presetsDark = listOf(
+        Color(0xFF2C2C2E),         // 0 - dark gray (instead of white)
+        Color(0xFF602020),         // 1 - CoursePink dark
+        Color(0xFF604020),         // 2 - CourseOrange dark
+        Color(0xFF606020),         // 3 - CourseYellow dark
+        Color(0xFF406020),         // 4 - CourseLightGreen dark
+        Color(0xFF206020),         // 5 - CourseGreen dark
+        Color(0xFF206060),         // 6 - CourseCyan dark
+        Color(0xFF602040),         // 7 - CoursePinkPurple dark
+        Color(0xFF402060),         // 8 - CoursePurple dark
+        Color(0xFF204060),         // 9 - CourseBlue dark
+        Color(0xFF602060)          // 10 - CourseMagenta dark
+    )
+
+    @Composable
     fun getColor(index: Int): Color {
+        val presets = if (isSystemInDarkTheme()) presetsDark else presetsLight
         return presets.getOrElse(index) { presets[0] }
     }
+
+    // Non-composable version for use outside composition (defaults to light)
+    fun getColorLight(index: Int): Color {
+        return presetsLight.getOrElse(index) { presetsLight[0] }
+    }
+
+    val presets: List<Color> get() = presetsLight
 }
