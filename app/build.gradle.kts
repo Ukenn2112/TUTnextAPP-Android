@@ -22,9 +22,19 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("release-keystore.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "tutnext123"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "tutnext"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "tutnext123"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
