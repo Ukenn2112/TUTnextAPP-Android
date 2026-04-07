@@ -44,12 +44,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.meikenn.tama.ui.navigation.Route
 import androidx.compose.foundation.layout.PaddingValues
@@ -96,25 +94,24 @@ fun MainScaffold(
                     }
                     Text(
                         text = title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 actions = {
-                    // User avatar - 30x30 red circle with white initials
                     Box(
                         modifier = Modifier
                             .padding(end = 12.dp)
                             .size(30.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFD32F2F))
-                            .clickable { onSettingsClick() },
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable(onClickLabel = "設定を開く") { onSettingsClick() },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = userInitials,
-                            color = Color.White,
-                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium
                         )
                     }

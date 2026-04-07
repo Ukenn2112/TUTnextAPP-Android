@@ -44,8 +44,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.meikenn.tama.ui.theme.AppColors
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -122,7 +122,7 @@ fun PrintSystemScreen(
                         val file = uiState.selectedFile!!
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = MaterialTheme.shapes.medium
                         ) {
                             Row(
                                 modifier = Modifier
@@ -154,7 +154,7 @@ fun PrintSystemScreen(
                         Button(
                             onClick = { filePickerLauncher.launch(supportedMimeTypes) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = MaterialTheme.shapes.medium
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
@@ -168,7 +168,7 @@ fun PrintSystemScreen(
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.medium,
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                             )
@@ -268,7 +268,7 @@ fun PrintSystemScreen(
                         Button(
                             onClick = { viewModel.uploadFile() },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.medium,
                             enabled = !uiState.isLoading
                         ) {
                             Text(
@@ -308,7 +308,7 @@ fun PrintSystemScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
-                        shape = RoundedCornerShape(12.dp)
+                        shape = MaterialTheme.shapes.medium
                     ) {
                         Column(
                             modifier = Modifier.padding(24.dp),
@@ -339,7 +339,7 @@ private fun SettingLabel(text: String) {
 private fun RecentUploadsSection(uploads: List<PrintResult>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
@@ -357,7 +357,7 @@ private fun RecentUploadsSection(uploads: List<PrintResult>) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Row(
                         modifier = Modifier
@@ -411,7 +411,7 @@ private fun PrintResultContent(
             Icons.Default.Check,
             contentDescription = null,
             modifier = Modifier.size(60.dp),
-            tint = Color(0xFF4CAF50)
+            tint = AppColors.semantic.success
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -433,7 +433,7 @@ private fun PrintResultContent(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 // Print number with copy button
@@ -480,7 +480,7 @@ private fun PrintResultContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 30.dp),
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
             Text("閉じる", fontWeight = FontWeight.SemiBold)
         }

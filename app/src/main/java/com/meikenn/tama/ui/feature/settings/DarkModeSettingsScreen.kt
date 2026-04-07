@@ -35,8 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.meikenn.tama.ui.theme.DarkModeColors
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,28 +85,27 @@ fun DarkModeSettingsScreen(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFFF3E0)),
+                        .background(DarkModeColors.lightPreviewBg),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "\u2600",
                         fontSize = 32.sp,
-                        color = Color(0xFFFF9800)
+                        color = DarkModeColors.lightPreviewIcon
                     )
                 }
                 Spacer(modifier = Modifier.width(24.dp))
-                // Moon icon preview
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE3F2FD)),
+                        .background(DarkModeColors.darkPreviewBg),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "\uD83C\uDF19",
                         fontSize = 32.sp,
-                        color = Color(0xFF1565C0)
+                        color = DarkModeColors.darkPreviewIcon
                     )
                 }
             }
@@ -116,14 +115,14 @@ fun DarkModeSettingsScreen(
             // Options card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.medium,
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 DarkModeOptionRow(
                     title = "システムに従う",
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF9E9E9E), Color(0xFF757575))),
+                    iconBackground = Brush.linearGradient(DarkModeColors.systemOptionGradient),
                     selected = currentMode == 0,
                     onClick = { viewModel.setDarkMode(0) }
                 )
@@ -133,7 +132,7 @@ fun DarkModeSettingsScreen(
                 )
                 DarkModeOptionRow(
                     title = "ライトモード",
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFFFFCA28), Color(0xFFFFA000))),
+                    iconBackground = Brush.linearGradient(DarkModeColors.lightOptionGradient),
                     selected = currentMode == 1,
                     onClick = { viewModel.setDarkMode(1) }
                 )
@@ -143,7 +142,7 @@ fun DarkModeSettingsScreen(
                 )
                 DarkModeOptionRow(
                     title = "ダークモード",
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF5C6BC0), Color(0xFF3949AB))),
+                    iconBackground = Brush.linearGradient(DarkModeColors.darkOptionGradient),
                     selected = currentMode == 2,
                     onClick = { viewModel.setDarkMode(2) }
                 )
@@ -179,7 +178,7 @@ private fun DarkModeOptionRow(
         Box(
             modifier = Modifier
                 .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
+                .clip(MaterialTheme.shapes.extraSmall)
                 .background(iconBackground),
             contentAlignment = Alignment.Center
         ) {
@@ -191,7 +190,7 @@ private fun DarkModeOptionRow(
                     else -> "\u2699"
                 },
                 fontSize = 14.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
@@ -205,7 +204,7 @@ private fun DarkModeOptionRow(
             Icon(
                 Icons.Default.Check,
                 contentDescription = "選択中",
-                tint = Color(0xFF1E88E5),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
         }

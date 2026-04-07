@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import com.meikenn.tama.ui.theme.AppColors
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -142,7 +143,7 @@ fun CourseDetailScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             Icons.Default.Person,
-                                            contentDescription = null,
+                                            contentDescription = "教員",
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -161,7 +162,7 @@ fun CourseDetailScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             Icons.Default.LocationOn,
-                                            contentDescription = null,
+                                            contentDescription = "教室",
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -185,7 +186,7 @@ fun CourseDetailScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         Icons.Default.Notifications,
-                                        contentDescription = null,
+                                        contentDescription = "掲示",
                                         modifier = Modifier.size(18.dp),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
@@ -268,11 +269,11 @@ private fun DetailCard(
             .fillMaxWidth()
             .shadow(
                 elevation = 6.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.medium,
                 ambientColor = Color.Black.copy(alpha = 0.08f),
                 spotColor = Color.Black.copy(alpha = 0.08f)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -301,11 +302,12 @@ private fun AnnouncementRow(announcement: Announcement) {
 
 @Composable
 private fun AttendanceCard(attendance: Attendance) {
-    val presentColor = Color(0xFF4CAF50)
-    val absentColor = Color(0xFFF44336)
-    val lateColor = Color(0xFFFF9800)
-    val earlyColor = Color(0xFF9C27B0)
-    val sickColor = Color(0xFF2196F3)
+    val semantic = AppColors.semantic
+    val presentColor = semantic.success
+    val absentColor = MaterialTheme.colorScheme.error
+    val lateColor = semantic.warning
+    val earlyColor = semantic.earlyLeave
+    val sickColor = semantic.excusedAbsence
 
     DetailCard {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -344,7 +346,7 @@ private fun AttendanceCard(attendance: Attendance) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(MaterialTheme.shapes.extraSmall)
                     ) {
                         val segments = listOf(
                             attendance.present to presentColor,
@@ -443,7 +445,7 @@ private fun MemoCard(
                     .fillMaxWidth()
                     .height(120.dp),
                 placeholder = { Text("メモ") },
-                shape = RoundedCornerShape(8.dp)
+                shape = MaterialTheme.shapes.small
             )
 
             if (hasChanges || isSaving) {
@@ -461,7 +463,7 @@ private fun MemoCard(
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
@@ -469,14 +471,14 @@ private fun MemoCard(
                         Icon(
                             Icons.Default.Check,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                     Text(
                         "保存",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.SemiBold
                     )
                 }

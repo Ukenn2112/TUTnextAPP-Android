@@ -88,7 +88,7 @@ fun LoginScreen(
             Text(
                 text = uiState.errorMessage!!,
                 fontSize = 14.sp,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 30.dp)
@@ -149,11 +149,11 @@ fun LoginScreen(
                 .height(50.dp)
                 .shadow(
                     elevation = 5.dp,
-                    shape = RoundedCornerShape(25.dp),
+                    shape = RoundedCornerShape(50),
                     ambientColor = Color.Black.copy(alpha = 0.12f),
                     spotColor = Color.Black.copy(alpha = 0.12f)
                 ),
-            shape = RoundedCornerShape(25.dp),
+            shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.onBackground,
                 contentColor = MaterialTheme.colorScheme.background,
@@ -231,7 +231,7 @@ private fun LoginTextField(
         targetValue = if (isFocused) {
             MaterialTheme.colorScheme.primary
         } else {
-            Color.Gray.copy(alpha = 0.3f)
+            MaterialTheme.colorScheme.outline
         },
         animationSpec = tween(durationMillis = 200),
         label = "borderColor"
@@ -260,7 +260,7 @@ private fun LoginTextField(
             .border(
                 width = 1.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(8.dp)
+                shape = MaterialTheme.shapes.small
             ),
         decorationBox = { innerTextField ->
             Box(
@@ -270,7 +270,7 @@ private fun LoginTextField(
                     Text(
                         text = placeholder,
                         fontSize = 18.sp,
-                        color = Color.Gray.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 innerTextField()

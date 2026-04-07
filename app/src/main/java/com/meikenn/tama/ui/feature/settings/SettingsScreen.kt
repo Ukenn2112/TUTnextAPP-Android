@@ -22,9 +22,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.meikenn.tama.ui.theme.SettingsIconColors
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -103,7 +106,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "パスワード変更",
                     icon = Icons.Default.Lock,
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF42A5F5), Color(0xFF1E88E5))),
+                    iconBackground = Brush.linearGradient(SettingsIconColors.busGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://google.tama.ac.jp/unicornidm/user/tama/password/"))
                         context.startActivity(intent)
@@ -119,7 +122,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "ダークモード",
                     icon = DarkModeIcon,
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF5C6BC0), Color(0xFF3949AB))),
+                    iconBackground = Brush.linearGradient(SettingsIconColors.darkModeGradient),
                     detail = viewModel.getDarkModeText(darkMode),
                     onClick = onNavigateToDarkMode
                 )
@@ -133,7 +136,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "利用規約",
                     icon = DocIcon,
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF9E9E9E), Color(0xFF757575))),
+                    iconBackground = Brush.linearGradient(SettingsIconColors.docGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/user-agreement"))
                         context.startActivity(intent)
@@ -143,7 +146,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "プライバシーポリシー",
                     icon = PrivacyIcon,
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF42A5F5), Color(0xFF1E88E5))),
+                    iconBackground = Brush.linearGradient(SettingsIconColors.privacyGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://tama.qaq.tw/policy"))
                         context.startActivity(intent)
@@ -153,7 +156,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "フィードバック",
                     icon = FeedbackIcon,
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFF26A69A), Color(0xFF00897B))),
+                    iconBackground = Brush.linearGradient(SettingsIconColors.feedbackGradient),
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:admin@ukenn.top?subject=${Uri.encode("TUTnext アプリフィードバック")}")
@@ -165,7 +168,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "レビューを書く",
                     icon = Icons.Default.Star,
-                    iconBackground = Brush.linearGradient(listOf(Color(0xFFFFCA28), Color(0xFFFFA000))),
+                    iconBackground = Brush.linearGradient(SettingsIconColors.settingsGradient),
                     onClick = {
                         // Open Play Store listing (placeholder)
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps"))
@@ -189,9 +192,9 @@ fun SettingsScreen(
                     Box(
                         modifier = Modifier
                             .size(28.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(MaterialTheme.shapes.extraSmall)
                             .background(
-                                Brush.linearGradient(listOf(Color(0xFFEF5350), Color(0xFFD32F2F)))
+                                Brush.linearGradient(SettingsIconColors.logoutGradient)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -199,13 +202,13 @@ fun SettingsScreen(
                             CircularProgressIndicator(
                                 modifier = Modifier.size(14.dp),
                                 strokeWidth = 2.dp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         } else {
                             Icon(
                                 Icons.AutoMirrored.Filled.ExitToApp,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -258,7 +261,7 @@ private fun UserInfoSection(fullName: String, username: String, initials: String
                 .clip(CircleShape)
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xFFEF5350), Color(0xFFC62828)),
+                        colors = SettingsIconColors.logoutGradient,
                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
                         end = androidx.compose.ui.geometry.Offset(60f, 60f)
                     )
@@ -267,7 +270,7 @@ private fun UserInfoSection(fullName: String, username: String, initials: String
         ) {
             Text(
                 text = initials,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -303,7 +306,7 @@ private fun SectionHeader(title: String) {
 private fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -331,14 +334,14 @@ private fun SettingsRow(
         Box(
             modifier = Modifier
                 .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
+                .clip(MaterialTheme.shapes.extraSmall)
                 .background(iconBackground),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 icon,
                 contentDescription = null,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(14.dp)
             )
         }
@@ -366,8 +369,7 @@ private fun SettingsRow(
     }
 }
 
-// Icon references using available Material icons
-private val DarkModeIcon = Icons.Default.Lock // moon - closest available
-private val DocIcon = Icons.Default.DateRange // doc placeholder
-private val PrivacyIcon = Icons.Default.Lock // privacy/hand placeholder
-private val FeedbackIcon = Icons.Default.Email // feedback envelope
+private val DarkModeIcon = Icons.Default.DarkMode
+private val DocIcon = Icons.Default.Description
+private val PrivacyIcon = Icons.Default.Shield
+private val FeedbackIcon = Icons.Default.Feedback

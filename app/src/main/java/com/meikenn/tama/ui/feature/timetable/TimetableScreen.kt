@@ -31,9 +31,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import com.meikenn.tama.ui.theme.AppColors
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -93,9 +93,9 @@ fun TimetableScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Warning,
-                        contentDescription = null,
+                        contentDescription = "エラー",
                         modifier = Modifier.size(40.dp),
-                        tint = Color(0xFFFF9800) // orange
+                        tint = AppColors.semantic.warning
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -129,7 +129,7 @@ fun TimetableScreen(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp)
                         )
                     }
@@ -297,13 +297,13 @@ private fun WeekdayHeader(
                     Box(
                         modifier = Modifier
                             .size(24.dp)
-                            .background(Color(0xFF4CAF50), CircleShape),
+                            .background(AppColors.semantic.success, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = dayName,
                             fontSize = 13.sp,
-                            color = Color.White,
+                            color = AppColors.semantic.onSuccess,
                             lineHeight = 13.sp,
                             textAlign = TextAlign.Center
                         )
@@ -369,7 +369,7 @@ private fun TimeSlotCell(
     }
 
     val borderColor = if (isCurrentDay && isCurrentPeriod) {
-        Color(0xFF4CAF50) // green
+        AppColors.semantic.success
     } else {
         MaterialTheme.colorScheme.outlineVariant
     }
@@ -379,9 +379,9 @@ private fun TimeSlotCell(
         modifier = Modifier
             .width(cellWidth)
             .height(cellHeight)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(MaterialTheme.shapes.small)
             .background(backgroundColor)
-            .border(borderWidth, borderColor, RoundedCornerShape(8.dp))
+            .border(borderWidth, borderColor, MaterialTheme.shapes.small)
             .clickable(enabled = course != null, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -420,12 +420,12 @@ private fun TimeSlotCell(
                         .align(Alignment.TopEnd)
                         .offset(x = 6.dp, y = (-6).dp)
                         .size(15.dp)
-                        .background(Color.Red, CircleShape),
+                        .background(MaterialTheme.colorScheme.error, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = unread.toString(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onError,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         lineHeight = 11.sp

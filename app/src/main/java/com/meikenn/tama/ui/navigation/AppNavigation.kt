@@ -1,6 +1,13 @@
 package com.meikenn.tama.ui.navigation
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -42,7 +49,7 @@ import kotlinx.coroutines.launch
 val LocalScaffoldPadding = compositionLocalOf { PaddingValues() }
 
 enum class SheetContent {
-    NONE, SETTINGS, DARK_MODE, TEACHER_EMAIL, PRINT_SYSTEM, COURSE_DETAIL
+    NONE, SETTINGS, SETTINGS_DARK_MODE, TEACHER_EMAIL, PRINT_SYSTEM, COURSE_DETAIL
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,9 +75,7 @@ fun AppNavigation(
     // Course detail params (stored when tapping a course)
     var selectedCourse by remember { mutableStateOf<Course?>(null) }
 
-    // Dark mode sub-sheet
-    var showDarkModeSheet by remember { mutableStateOf(false) }
-    val darkModeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    // Track if we're showing dark mode within the settings sheet
 
     fun showSheet(sheet: SheetContent) {
         currentSheet = sheet
@@ -127,11 +132,16 @@ fun AppNavigation(
                 SheetContent.SETTINGS -> {
                     SettingsScreen(
                         onNavigateBack = { hideSheet() },
-                        onNavigateToDarkMode = { showDarkModeSheet = true },
+                        onNavigateToDarkMode = { currentSheet = SheetContent.SETTINGS_DARK_MODE },
                         onLogout = {
                             hideSheet()
                             viewModel.refreshLoginState()
                         }
+                    )
+                }
+                SheetContent.SETTINGS_DARK_MODE -> {
+                    DarkModeSettingsScreen(
+                        onNavigateBack = { currentSheet = SheetContent.SETTINGS }
                     )
                 }
                 SheetContent.TEACHER_EMAIL -> {
@@ -173,24 +183,4 @@ fun AppNavigation(
         }
     }
 
-    // Dark mode sub-sheet (on top of settings)
-    if (showDarkModeSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showDarkModeSheet = false },
-            sheetState = darkModeSheetState,
-            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-            dragHandle = null,
-            windowInsets = WindowInsets.statusBars,
-            modifier = Modifier.fillMaxHeight(0.6f)
-        ) {
-            DarkModeSettingsScreen(
-                onNavigateBack = {
-                    scope.launch {
-                        darkModeSheetState.hide()
-                        showDarkModeSheet = false
-                    }
-                }
-            )
-        }
-    }
 }

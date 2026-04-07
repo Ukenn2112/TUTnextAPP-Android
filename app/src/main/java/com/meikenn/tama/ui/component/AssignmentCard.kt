@@ -20,12 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.meikenn.tama.domain.model.Assignment
+import com.meikenn.tama.ui.theme.AppColors
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -35,22 +35,23 @@ fun AssignmentCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val semantic = AppColors.semantic
     val timeColor = when {
-        assignment.isOverdue -> Color(0xFFFF3B30) // iOS red
-        assignment.isUrgent -> Color(0xFFFF9500) // iOS orange
+        assignment.isOverdue -> semantic.urgent
+        assignment.isUrgent -> semantic.warning
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     val timeBgColor = when {
-        assignment.isOverdue -> Color(0xFFFF3B30).copy(alpha = 0.1f)
-        assignment.isUrgent -> Color(0xFFFF9500).copy(alpha = 0.1f)
+        assignment.isOverdue -> semantic.urgent.copy(alpha = 0.1f)
+        assignment.isUrgent -> semantic.warning.copy(alpha = 0.1f)
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
     }
 
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -76,7 +77,7 @@ fun AssignmentCard(
 
                 // Time badge
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.small,
                     color = timeBgColor
                 ) {
                     Row(
@@ -86,7 +87,7 @@ fun AssignmentCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.AccessTime,
-                            contentDescription = null,
+                            contentDescription = "残り時間",
                             tint = timeColor,
                             modifier = Modifier.size(12.dp)
                         )

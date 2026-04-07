@@ -34,13 +34,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.domain.model.*
 import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
+import com.meikenn.tama.ui.theme.AppColors
 import com.meikenn.tama.ui.theme.AppPrimary
 import com.meikenn.tama.ui.theme.CurrentHourBgDark
 import com.meikenn.tama.ui.theme.CurrentHourBgLight
-
-// iOS-matched colors
-private val OrangeAccent = Color(0xFFFF9800)
-private val GreenAccent = Color(0xFF34C759) // iOS system green
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,16 +194,16 @@ private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
                     .width(260.dp)
                     .shadow(
                         elevation = 2.dp,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = MaterialTheme.shapes.medium,
                         ambientColor = Color.Black.copy(alpha = 0.08f),
                         spotColor = Color.Black.copy(alpha = 0.08f)
                     )
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.surface)
                     .border(
                         width = 1.dp,
-                        color = OrangeAccent.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(10.dp)
+                        color = AppColors.semantic.warning.copy(alpha = 0.4f),
+                        shape = MaterialTheme.shapes.medium
                     )
                     .clickable(enabled = message.url != null) {
                         message.url?.let { url ->
@@ -223,9 +220,9 @@ private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Warning,
-                        contentDescription = null,
+                        contentDescription = "お知らせ",
                         modifier = Modifier.size(14.dp),
-                        tint = OrangeAccent
+                        tint = AppColors.semantic.warning
                     )
                     Text(
                         text = message.title,
@@ -241,7 +238,7 @@ private fun TemporaryMessagesRow(messages: List<TemporaryMessage>) {
                             imageVector = Icons.Filled.ChevronRight,
                             contentDescription = null,
                             modifier = Modifier.size(9.dp),
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -325,11 +322,11 @@ private fun RouteChip(
     onClick: () -> Unit
 ) {
     val containerColor = if (isSelected) AppPrimary else MaterialTheme.colorScheme.surfaceContainerHighest
-    val contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.large,
         color = containerColor,
         shadowElevation = if (isSelected) 3.dp else 0.dp
     ) {
@@ -366,11 +363,11 @@ private fun TimeInfoCard(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .shadow(
                 elevation = 3.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.medium,
                 ambientColor = AppPrimary.copy(alpha = 0.15f),
                 spotColor = AppPrimary.copy(alpha = 0.15f)
             )
-            .clip(RoundedCornerShape(12.dp))
+            .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -406,7 +403,7 @@ private fun TimeInfoCard(
                         val diffTotalSeconds = (targetBus.hour - uiState.currentHour) * 3600 +
                             (targetBus.minute - uiState.currentMinute) * 60 -
                             uiState.currentSecond
-                        val countdownColor = if (isSelectedMode) OrangeAccent else GreenAccent
+                        val countdownColor = if (isSelectedMode) AppColors.semantic.warning else AppColors.semantic.countdown
                         if (diffTotalSeconds > 0) {
                             val hours = diffTotalSeconds / 3600
                             val mins = (diffTotalSeconds % 3600) / 60
@@ -430,7 +427,7 @@ private fun TimeInfoCard(
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = OrangeAccent
+                                color = AppColors.semantic.warning
                             )
                         } else {
                             Text(
@@ -460,12 +457,12 @@ private fun TimeInfoCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(OrangeAccent.copy(alpha = 0.15f))
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(AppColors.semantic.warning.copy(alpha = 0.15f))
                         .border(
                             width = 1.dp,
-                            color = OrangeAccent.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(10.dp)
+                            color = AppColors.semantic.warning.copy(alpha = 0.5f),
+                            shape = MaterialTheme.shapes.medium
                         )
                         .then(
                             if (pinMessage.url != null) {
@@ -498,12 +495,12 @@ private fun TimeInfoCard(
                         if (pinMessage.url != null) {
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(7.dp))
-                                    .background(Color.White.copy(alpha = 0.22f))
+                                    .clip(MaterialTheme.shapes.small)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.22f))
                                     .border(
                                         width = 0.5.dp,
-                                        color = OrangeAccent.copy(alpha = 0.35f),
-                                        shape = RoundedCornerShape(7.dp)
+                                        color = AppColors.semantic.warning.copy(alpha = 0.35f),
+                                        shape = MaterialTheme.shapes.small
                                     )
                                     .padding(horizontal = 9.dp, vertical = 5.dp)
                             ) {
@@ -513,7 +510,7 @@ private fun TimeInfoCard(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = OrangeAccent
+                                    color = AppColors.semantic.warning
                                 )
                             }
                         }
@@ -535,7 +532,7 @@ private fun TimeTableHeader() {
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(top = 8.dp)
-            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)) // top-only rounding
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -613,7 +610,7 @@ private fun HourScheduleRow(
 
         HorizontalDivider(
             thickness = 1.dp,
-            color = Color.Gray.copy(alpha = 0.3f)
+            color = MaterialTheme.colorScheme.outlineVariant
         )
     }
 }
@@ -663,19 +660,19 @@ private fun TimeEntryChip(
         modifier = Modifier.clickable { onClick() }
     ) {
         val backgroundColor = when {
-            isSelected -> OrangeAccent.copy(alpha = 0.9f)
+            isSelected -> AppColors.semantic.warning.copy(alpha = 0.9f)
             isHighlighted -> AppPrimary
             else -> Color.Transparent
         }
         val textColor = when {
-            isSelected || isHighlighted -> Color.White
+            isSelected || isHighlighted -> MaterialTheme.colorScheme.onPrimary
             else -> MaterialTheme.colorScheme.onSurface
         }
 
         Box(
             modifier = Modifier
                 .size(width = 50.dp, height = 36.dp)
-                .clip(RoundedCornerShape(6.dp))
+                .clip(MaterialTheme.shapes.extraSmall)
                 .background(backgroundColor),
             contentAlignment = Alignment.Center
         ) {
@@ -698,7 +695,7 @@ private fun TimeEntryChip(
                     .offset(x = 8.dp, y = (-4).dp)
                     .size(18.dp)
                     .background(
-                        Color.Red.copy(alpha = 0.8f),
+                        MaterialTheme.colorScheme.error,
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -709,7 +706,7 @@ private fun TimeEntryChip(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     ),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onError
                 )
             }
         }
@@ -731,11 +728,11 @@ private fun SpecialNotesSection(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .shadow(
                 elevation = 3.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = MaterialTheme.shapes.medium,
                 ambientColor = AppPrimary.copy(alpha = 0.12f),
                 spotColor = AppPrimary.copy(alpha = 0.12f)
             )
-            .clip(RoundedCornerShape(12.dp))
+            .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(
@@ -756,7 +753,7 @@ private fun SpecialNotesSection(
                         modifier = Modifier
                             .size(20.dp)
                             .background(
-                                Color.Red.copy(alpha = 0.8f),
+                                MaterialTheme.colorScheme.error,
                                 CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -767,7 +764,7 @@ private fun SpecialNotesSection(
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onError
                         )
                     }
                     Text(
@@ -782,8 +779,8 @@ private fun SpecialNotesSection(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.Red.copy(alpha = 0.1f))
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.errorContainer)
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Row(
@@ -792,9 +789,9 @@ private fun SpecialNotesSection(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Warning,
-                            contentDescription = null,
+                            contentDescription = "注意",
                             modifier = Modifier.size(16.dp),
-                            tint = Color.Red
+                            tint = MaterialTheme.colorScheme.error
                         )
                         Text(
                             text = "水曜日は特別ダイヤで運行しています",
@@ -802,7 +799,7 @@ private fun SpecialNotesSection(
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color.Red
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
                 }

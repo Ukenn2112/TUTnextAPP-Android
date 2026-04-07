@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import com.meikenn.tama.ui.navigation.LocalScaffoldPadding
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meikenn.tama.ui.component.AssignmentCard
+import com.meikenn.tama.ui.theme.AppColors
 
 @Composable
 fun AssignmentScreen(
@@ -170,23 +170,23 @@ private fun FilterPill(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val selectedBlue = Color(0xFF007AFF)
+    val selectedColor = AppColors.semantic.selectedFilter
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) selectedBlue.copy(alpha = 0.9f)
+        targetValue = if (isSelected) selectedColor.copy(alpha = 0.9f)
         else MaterialTheme.colorScheme.surfaceContainerHighest,
         animationSpec = tween(durationMillis = 200),
         label = "pillBg"
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White
+        targetValue = if (isSelected) AppColors.semantic.onSelectedFilter
         else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(durationMillis = 200),
         label = "pillText"
     )
 
-    val shape = RoundedCornerShape(20.dp)
+    val shape = MaterialTheme.shapes.large
 
     Box(
         modifier = Modifier
@@ -195,8 +195,8 @@ private fun FilterPill(
                     Modifier.shadow(
                         elevation = 3.dp,
                         shape = shape,
-                        ambientColor = selectedBlue.copy(alpha = 0.3f),
-                        spotColor = selectedBlue.copy(alpha = 0.3f)
+                        ambientColor = selectedColor.copy(alpha = 0.3f),
+                        spotColor = selectedColor.copy(alpha = 0.3f)
                     )
                 } else Modifier
             )
@@ -243,8 +243,8 @@ private fun EmptyState(
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
-            contentDescription = null,
-            tint = Color(0xFF34C759), // iOS green
+            contentDescription = "完了",
+            tint = AppColors.semantic.success,
             modifier = Modifier.size(60.dp)
         )
         Text(

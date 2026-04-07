@@ -10,14 +10,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,7 +34,7 @@ fun CourseCard(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(MaterialTheme.shapes.small)
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp),
@@ -49,7 +47,7 @@ fun CourseCard(
         ) {
             Text(
                 text = course.name,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
@@ -60,7 +58,7 @@ fun CourseCard(
             if (course.room.isNotBlank()) {
                 Text(
                     text = course.room,
-                    fontSize = 11.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -76,12 +74,12 @@ fun CourseCard(
                     .align(Alignment.TopEnd)
                     .offset(x = 6.dp, y = (-6).dp)
                     .size(15.dp)
-                    .background(Color.Red, CircleShape),
+                    .background(MaterialTheme.colorScheme.error, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = unread.toString(),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onError,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 11.sp
