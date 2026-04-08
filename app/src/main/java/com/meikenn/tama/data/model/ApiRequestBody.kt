@@ -8,7 +8,6 @@ data class ApiRequestBody(
     val subProductCd: String = Constants.SUB_PRODUCT_CD,
     val loginUserId: String = "",
     val encryptedLoginPassword: String = "",
-    val plainLoginPassword: String = "",
     val langCd: String = Constants.LANG_CD,
     val data: JsonObject = JsonObject()
 )
